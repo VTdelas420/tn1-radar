@@ -1,5 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { MusicProject, PricingModel } from '../types/music';
+import type { ReleaseFiles } from '../lib/persistence';
 import {
   X,
   Plus,
@@ -29,10 +30,11 @@ import coverDefault from '../assets/images/album_baile_saopaulo_1793848443588.jp
 
 interface NewProjectModalProps {
   onClose: () => void;
-  onSaveProject: (project: MusicProject) => void;
+  onSaveProject: (project: MusicProject, files: ReleaseFiles) => void;
 }
 
 interface DraftTrack {
+  file?: File;
   title: string;
   bpm: number;
   keySignature: string;
@@ -110,6 +112,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   // Cover Art Upload State (Strict Max 3000x3000 px)
   const [coverArtUrl, setCoverArtUrl] = useState<string>(coverDefault);
   const [coverFileName, setCoverFileName] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | undefined>(undefined);
   const [coverDimensions, setCoverDimensions] = useState<{ width: number; height: number } | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
@@ -160,6 +163,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       }
 
       setCoverArtUrl(objectUrl);
+      setCoverFile(file);
       setCoverFileName(file.name);
       setCoverDimensions({ width: img.naturalWidth, height: img.naturalHeight });
       setCoverError(null);
@@ -206,6 +210,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     const extracted = await Promise.all(files.map((file) => extractAudioMetadata(file)));
 
     const newUploadedTracks: DraftTrack[] = extracted.map((item, idx) => ({
+      file: files[idx],
       title: item.name || `Faixa ${idx + 1}`,
       bpm: 128,
       keySignature: 'C minor',
@@ -242,6 +247,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
       updated[index] = {
         ...updated[index],
+        file,
         title: shouldUpdateTitle ? meta.name : currentTitle,
         durationSec: meta.durationSec,
         audioUrl: meta.url,
@@ -396,7 +402,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       reviews: [],
     };
 
-    onSaveProject(newProj);
+    onSaveProject(newProj, { cover: coverFile, tracks: tracks.map((t) => t.file) });
     onClose();
   };
 

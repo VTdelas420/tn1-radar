@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
+import { loadCatalog, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
 import { MusicProject, UserProfile, ReprisedReview } from './types/music';
 import { INITIAL_PROJECTS, INITIAL_USER_PROFILES } from './data/mockProjects';
 import { TopNav } from './components/TopNav';
@@ -18,6 +20,39 @@ export default function App() {
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
   const [selectedProject, setSelectedProject] = useState<MusicProject | null>(null);
   const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
+
+  // Cloud sync status shown in a small toast (only when Firebase is configured)
+  const [syncStatus, setSyncStatus] = useState<
+    { kind: 'saving' | 'saved' | 'error'; message: string } | null
+  >(null);
+
+  useEffect(() => {
+    if (!isFirebaseEnabled) return;
+    let cancelled = false;
+    loadCatalog(INITIAL_PROJECTS)
+      .then((catalog) => {
+        if (cancelled) return;
+        // Keep anything published in this session before the load finished
+        setProjects((prev) => {
+          const ids = new Set(catalog.map((p) => p.id));
+          const unsaved = prev.filter((p) => !ids.has(p.id) && p.id.startsWith('proj-'));
+          return [...unsaved, ...catalog];
+        });
+      })
+      .catch((err) => {
+        console.error('Falha ao carregar catálogo do Firebase:', err);
+        if (!cancelled) setSyncStatus({ kind: 'error', message: 'Não foi possível carregar os lançamentos salvos.' });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (syncStatus?.kind !== 'saved') return;
+    const t = setTimeout(() => setSyncStatus(null), 3500);
+    return () => clearTimeout(t);
+  }, [syncStatus]);
 
   // Current logged in listener profile (Thiago Mendes, @thiagom_critica)
   const currentUser = userProfiles.find((u) => u.id === 'usr-1') || userProfiles[0];
@@ -155,6 +190,12 @@ export default function App() {
 
   // Add Reprised Review to state
   const handleAddReview = (review: ReprisedReview) => {
+    if (isFirebaseEnabled) {
+      saveReview(review).catch((err) => {
+        console.error('Falha ao salvar avaliação:', err);
+        setSyncStatus({ kind: 'error', message: 'A avaliação não foi salva na nuvem.' });
+      });
+    }
     setProjects((prev) =>
       prev.map((p) => {
         if (p.id !== review.projectId) return p;
@@ -387,12 +428,56 @@ export default function App() {
         />
       )}
 
+      {syncStatus && (
+        <div
+          role="status"
+          className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100%-2rem)] px-4 py-2.5 rounded-lg border text-sm font-mono shadow-xl flex items-center gap-3 ${
+            syncStatus.kind === 'error'
+              ? 'bg-red-950/90 border-red-500/50 text-red-200'
+              : 'bg-black/90 border-sky-400/50 text-sky-200'
+          }`}
+        >
+          <span>{syncStatus.message}</span>
+          {syncStatus.kind === 'error' && (
+            <button
+              onClick={() => setSyncStatus(null)}
+              className="text-red-300 hover:text-white min-w-[28px]"
+              aria-label="Fechar aviso"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
+
       {/* New Project Modal */}
       {isNewProjectModalOpen && (
         <NewProjectModal
           onClose={() => setIsNewProjectModalOpen(false)}
-          onSaveProject={(newProj) => {
+          onSaveProject={(newProj, files: ReleaseFiles) => {
             setProjects((prev) => [newProj, ...prev]);
+            if (isFirebaseEnabled) {
+              setSyncStatus({ kind: 'saving', message: 'Enviando capa e faixas para a nuvem…' });
+              publishProject(newProj, files)
+                .then((stored) => {
+                  // Swap temporary blob: URLs for the permanent ones
+                  setProjects((prev) => prev.map((p) => (p.id === stored.id ? { ...stored, reviews: p.reviews } : p)));
+                  setCurrentProject((cur) => (cur?.id === stored.id ? stored : cur));
+                  setSyncStatus({
+                    kind: 'saved',
+                    message: isUsingEmulators
+                      ? 'Lançamento salvo (modo teste local).'
+                      : 'Lançamento salvo na nuvem.',
+                  });
+                })
+                .catch((err) => {
+                  console.error('Falha ao publicar lançamento:', err);
+                  setSyncStatus({
+                    kind: 'error',
+                    message: 'O lançamento aparece só neste navegador: falhou o envio para a nuvem.',
+                  });
+                });
+            }
             setUserProfiles((prev) =>
               prev.map((u) => {
                 if (u.id !== currentUser.id) return u;

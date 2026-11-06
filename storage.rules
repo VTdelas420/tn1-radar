@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Covers and audio for releases. Public to read; signed-in visitors may upload
+    // images up to 15 MB and audio up to 200 MB. Files cannot be overwritten.
+    match /releases/{projectId}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && (
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 15 * 1024 * 1024)
+          || (request.resource.contentType.matches('audio/.*') && request.resource.size < 200 * 1024 * 1024)
+        );
+    }
+  }
+}
