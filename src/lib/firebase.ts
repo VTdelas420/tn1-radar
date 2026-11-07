@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { connectAuthEmulator, getAuth, signInAnonymously, type Auth } from 'firebase/auth';
+import { connectAuthEmulator, getAuth, type Auth } from 'firebase/auth';
 import { connectFirestoreEmulator, initializeFirestore, type Firestore } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage, type FirebaseStorage } from 'firebase/storage';
 
@@ -42,22 +42,14 @@ if (isFirebaseEnabled) {
 
 export const isUsingEmulators = isFirebaseEnabled && import.meta.env.VITE_USE_EMULATORS === 'true';
 
-let authPromise: Promise<string | null> | null = null;
-
-/** Signs the visitor in anonymously so security rules can require an authenticated user. */
-export function ensureSignedIn(): Promise<string | null> {
-  if (!auth) return Promise.resolve(null);
-  if (auth.currentUser) return Promise.resolve(auth.currentUser.uid);
-  if (!authPromise) {
-    authPromise = signInAnonymously(auth)
-      .then((cred) => cred.user.uid)
-      .catch((err) => {
-        console.error('Firebase anonymous sign-in failed:', err);
-        authPromise = null;
-        return null;
-      });
-  }
-  return authPromise;
+/**
+ * Returns the signed-in user's id, or null for visitors. Browsing needs no
+ * account; publishing, reviewing and reporting do (see src/lib/auth.tsx).
+ */
+export async function ensureSignedIn(): Promise<string | null> {
+  if (!auth) return null;
+  await auth.authStateReady();
+  return auth.currentUser?.uid ?? null;
 }
 
-export { db, storage };
+export { auth, db, storage };

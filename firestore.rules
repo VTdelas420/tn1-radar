@@ -1,15 +1,62 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Releases: anyone can read; a signed-in visitor can create one owned by them;
-    // only the owner can change or remove it.
+
+    // ---- helpers ----
+    // A real account (Google or e-mail), not an anonymous session
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function isArtist() {
+      return hasProfile() && profile().role == 'artist';
+    }
+    // Only these fields change when a moderator hides something
+    function onlyHiding() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden', 'hiddenAt'])
+        && request.resource.data.hidden == true;
+    }
+
+    // ---- public profiles: users/{uid} ----
+    match /users/{uid} {
+      allow read: if true;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.role in ['listener', 'artist']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.handle is string
+        && request.resource.data.handle.matches('^[a-z0-9_.]{3,30}$')
+        // Artists must be from DF + Entorno
+        && (request.resource.data.role != 'artist' || request.resource.data.state in ['DF', 'GO']);
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---- admins/{uid}: created by hand in the Firebase console ----
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // ---- releases ----
     match /projects/{projectId} {
       allow read: if true;
-      allow create: if request.auth != null
+      allow create: if isArtist()
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
         && request.resource.data.title.size() <= 200
+        && !('hidden' in request.resource.data)
         // Launch phase: pin must be inside DF + Entorno (same rectangle as src/config/region.ts, plus margin)
         && request.resource.data.regionVerifiedAt is number
         && request.resource.data.state in ['DF', 'GO']
@@ -19,22 +66,43 @@ service cloud.firestore {
         && request.resource.data.coordinates.lat <= -14.85
         && request.resource.data.coordinates.lng >= -49.1
         && request.resource.data.coordinates.lng <= -47.0;
-      allow update, delete: if request.auth != null
-        && resource.data.ownerUid == request.auth.uid;
+      // Owner can edit (but not un-hide); moderators can only hide
+      allow update: if (signedIn() && resource.data.ownerUid == request.auth.uid
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.get('hidden', false) == resource.data.get('hidden', false))
+        || (isAdmin() && onlyHiding());
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
-    // Reviews: anyone can read; signed-in visitors can create their own, rating 1–5.
+    // ---- reviews: any account with a profile ----
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if request.auth != null
+      allow create: if hasProfile()
         && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.userId == request.auth.uid
+        && !('hidden' in request.resource.data)
         && request.resource.data.rating is number
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
         && request.resource.data.reviewText is string
         && request.resource.data.reviewText.size() <= 5000;
-      allow update, delete: if request.auth != null
-        && resource.data.ownerUid == request.auth.uid;
+      allow update: if (signedIn() && resource.data.ownerUid == request.auth.uid
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.get('hidden', false) == resource.data.get('hidden', false))
+        || (isAdmin() && onlyHiding());
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ---- reports: anyone signed in can file one; only admins read/close them ----
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.targetType in ['project', 'review']
+        && request.resource.data.targetId is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 1000;
+      allow read, delete: if isAdmin();
+      allow update: if false;
     }
   }
 }

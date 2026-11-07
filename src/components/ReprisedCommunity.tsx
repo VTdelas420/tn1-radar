@@ -1,3 +1,4 @@
+import { useAuth } from '../lib/auth';
 import React, { useState } from 'react';
 import { MusicProject, ReprisedReview, UserProfile } from '../types/music';
 import {
@@ -26,6 +27,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
   onOpenUserProfile,
   onAddReview,
 }) => {
+  const { requireAccount, profile } = useAuth();
   const allReviews: ReprisedReview[] = projects.flatMap((p) => p.reviews || []);
 
   const [activeFilter, setActiveFilter] = useState<'all' | '5stars' | '4plus'>('all');
@@ -96,7 +98,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
         </div>
 
         <button
-          onClick={() => setShowWriteModal(true)}
+          onClick={() => requireAccount('review', () => setShowWriteModal(true))}
           className="min-h-[44px] flex items-center gap-2 px-5 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-bold text-xs sm:text-sm rounded-xl shadow-[0_0_20px_rgba(56,189,248,0.25)] transition-all active:scale-95 shrink-0"
         >
           <MessageSquare className="w-4 h-4" />
@@ -308,18 +310,9 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-zinc-300 block mb-1.5">
-                  Seu Nome
-                </label>
-                <input
-                  type="text"
-                  value={reviewerName}
-                  onChange={(e) => setReviewerName(e.target.value)}
-                  placeholder="Seu nome..."
-                  className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
-                />
-              </div>
+              <p className="text-xs text-zinc-400">
+                Publicando como <span className="text-white font-semibold">{profile ? `${profile.name} (@${profile.handle})` : 'você'}</span>
+              </p>
 
               <div>
                 <label className="text-xs font-medium text-zinc-300 block mb-1.5">

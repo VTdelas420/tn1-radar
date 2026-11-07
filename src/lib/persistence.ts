@@ -1,4 +1,4 @@
-import { collection, doc, getDocs, setDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage, ensureSignedIn, isFirebaseEnabled } from './firebase';
 import type { MusicProject, ReprisedReview } from '../types/music';
@@ -12,6 +12,8 @@ export interface ReleaseFiles {
 
 const PROJECTS = 'projects';
 const REVIEWS = 'reviews';
+const REPORTS = 'reports';
+const ADMINS = 'admins';
 
 function safeName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80);
@@ -33,7 +35,7 @@ export async function publishProject(
 ): Promise<MusicProject> {
   if (!isFirebaseEnabled) return project;
   const uid = await ensureSignedIn();
-  if (!uid) throw new Error('Não foi possível autenticar no Firebase.');
+  if (!uid) throw new Error('Entre na sua conta para continuar.');
 
   const base = `releases/${project.id}`;
   const coverArt = files.cover
@@ -60,7 +62,7 @@ export async function publishProject(
 export async function saveReview(review: ReprisedReview): Promise<void> {
   if (!isFirebaseEnabled) return;
   const uid = await ensureSignedIn();
-  if (!uid) throw new Error('Não foi possível autenticar no Firebase.');
+  if (!uid) throw new Error('Entre na sua conta para continuar.');
   await setDoc(doc(db!, REVIEWS, review.id), { ...review, ownerUid: uid, createdAt: Date.now() });
 }
 
@@ -91,13 +93,16 @@ export async function loadCatalog(seed: MusicProject[]): Promise<MusicProject[]>
     getDocs(collection(db!, REVIEWS)),
   ]);
 
+  // Releases/reviews hidden by moderation never reach the map
   const saved = projectSnap.docs
-    .map((d) => d.data() as MusicProject & { createdAt?: number })
+    .map((d) => d.data() as MusicProject & { createdAt?: number; hidden?: boolean })
+    .filter((p) => !p.hidden)
     .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
   const reviewsByProject = new Map<string, ReprisedReview[]>();
   reviewSnap.docs
-    .map((d) => d.data() as ReprisedReview & { createdAt?: number })
+    .map((d) => d.data() as ReprisedReview & { createdAt?: number; hidden?: boolean })
+    .filter((r) => !r.hidden)
     .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
     .forEach((r) => {
       const list = reviewsByProject.get(r.projectId) ?? [];
@@ -108,4 +113,68 @@ export async function loadCatalog(seed: MusicProject[]): Promise<MusicProject[]>
   const savedIds = new Set(saved.map((p) => p.id));
   const all = [...saved, ...seed.filter((p) => !savedIds.has(p.id))];
   return all.map((p) => withReviews({ ...p, reviews: p.reviews ?? [] }, reviewsByProject.get(p.id) ?? []));
+}
+
+// ---------- Moderation ----------
+
+export type ReportTarget = 'project' | 'review';
+
+export interface ContentReport {
+  id: string;
+  targetType: ReportTarget;
+  targetId: string;
+  targetTitle: string;
+  reason: string;
+  reporterUid: string;
+  createdAt: number;
+}
+
+/** Any signed-in account can report a release or a review. */
+export async function reportContent(
+  targetType: ReportTarget,
+  targetId: string,
+  targetTitle: string,
+  reason: string
+): Promise<void> {
+  if (!isFirebaseEnabled) return;
+  const uid = await ensureSignedIn();
+  if (!uid) throw new Error('Entre na sua conta para denunciar.');
+  await addDoc(collection(db!, REPORTS), {
+    targetType,
+    targetId,
+    targetTitle: targetTitle.slice(0, 200),
+    reason: reason.trim().slice(0, 1000),
+    reporterUid: uid,
+    createdAt: Date.now(),
+  });
+}
+
+/** Admins are listed in the `admins` collection (document id = user id), set by hand in the console. */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  if (!isFirebaseEnabled) return false;
+  const uid = await ensureSignedIn();
+  if (!uid) return false;
+  try {
+    return (await getDoc(doc(db!, ADMINS, uid))).exists();
+  } catch {
+    return false;
+  }
+}
+
+export async function listReports(): Promise<ContentReport[]> {
+  const snap = await getDocs(collection(db!, REPORTS));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<ContentReport, 'id'>) }))
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/** Hides the reported release/review for everyone and closes the report. */
+export async function hideReportedContent(report: ContentReport): Promise<void> {
+  const col = report.targetType === 'project' ? PROJECTS : REVIEWS;
+  await updateDoc(doc(db!, col, report.targetId), { hidden: true, hiddenAt: Date.now() });
+  await deleteDoc(doc(db!, REPORTS, report.id));
+}
+
+export async function dismissReport(report: ContentReport): Promise<void> {
+  await deleteDoc(doc(db!, REPORTS, report.id));
 }

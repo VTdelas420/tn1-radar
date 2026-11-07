@@ -39,6 +39,8 @@ import coverDefault from '../assets/images/album_baile_saopaulo_1793848443588.jp
 interface NewProjectModalProps {
   onClose: () => void;
   onSaveProject: (project: MusicProject, files: ReleaseFiles) => void;
+  /** Signed-in artist: name, @handle and RA prefill the form. */
+  artist?: { name: string; handle: string; city?: string; state?: string } | null;
 }
 
 interface DraftTrack {
@@ -55,19 +57,21 @@ interface DraftTrack {
 export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   onClose,
   onSaveProject,
+  artist,
 }) => {
   // Smart Defaults (Hick-Hyman Law & Task Offloading)
   const [title, setTitle] = useState('');
-  const [artistName, setArtistName] = useState('Coletivo Independente');
-  const [artistHandle] = useState('@artista_som');
+  const [artistName, setArtistName] = useState(artist?.name ?? 'Coletivo Independente');
+  const [artistHandle] = useState(artist ? `@${artist.handle}` : '@artista_som');
   const [catalogNumber, setCatalogNumber] = useState('BR-025');
   const [genre, setGenre] = useState('Baile Funk & Experimental');
   const [subgenre, setSubgenre] = useState('Bass / Post-Baile');
-  const [city, setCity] = useState('Brasília (Plano Piloto)');
-  const [state, setState] = useState('DF');
+  const startPlace = (artist?.city && findRegionLocation(artist.city, artist.state)) || null;
+  const [city, setCity] = useState(startPlace?.n ?? 'Brasília (Plano Piloto)');
+  const [state, setState] = useState(startPlace?.uf ?? 'DF');
   const [country, setCountry] = useState('Brasil');
-  const [lat, setLat] = useState(-15.7938);
-  const [lng, setLng] = useState(-47.8827);
+  const [lat, setLat] = useState(startPlace?.lat ?? -15.7938);
+  const [lng, setLng] = useState(startPlace?.lng ?? -47.8827);
 
   // Device-location check: only artists physically in DF + Entorno can publish
   const [locationStatus, setLocationStatus] = useState<

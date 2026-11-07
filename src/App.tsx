@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
 import { loadCatalog, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
+import { useAuth } from './lib/auth';
+import { AccountModals } from './components/AccountModals';
+import { ModerationPanel } from './components/ModerationPanel';
 import { MusicProject, UserProfile, ReprisedReview } from './types/music';
 import { INITIAL_PROJECTS, INITIAL_USER_PROFILES } from './data/mockProjects';
 import { TopNav } from './components/TopNav';
@@ -16,6 +19,10 @@ import { audioEngine } from './utils/audioEngine';
 import { formatBrl } from './utils/monetization';
 
 export default function App() {
+  const account = useAuth();
+  const [isModerationOpen, setIsModerationOpen] = useState(false);
+  // Publishing needs an artist account (opens login / profile setup first)
+  const openNewProject = () => account.requireAccount('publish', () => setIsNewProjectModalOpen(true), { artist: true });
   const [projects, setProjects] = useState<MusicProject[]>(INITIAL_PROJECTS);
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
   const [selectedProject, setSelectedProject] = useState<MusicProject | null>(null);
@@ -189,7 +196,22 @@ export default function App() {
   };
 
   // Add Reprised Review to state
-  const handleAddReview = (review: ReprisedReview) => {
+  const handleAddReview = (incoming: ReprisedReview) => {
+    if (account.enabled && (!account.user || !account.profile)) {
+      account.requireAccount('review', () => {});
+      return;
+    }
+    // The reviewer is always the signed-in account, never a typed name
+    const review: ReprisedReview = account.profile
+      ? {
+          ...incoming,
+          userId: account.profile.uid,
+          userName: account.profile.name,
+          userHandle: `@${account.profile.handle}`,
+          isSupporter: false,
+          likesCount: 0,
+        }
+      : incoming;
     if (isFirebaseEnabled) {
       saveReview(review).catch((err) => {
         console.error('Falha ao salvar avaliação:', err);
@@ -324,7 +346,8 @@ export default function App() {
           setActiveTab(tab);
           setSelectedProject(null);
         }}
-        onOpenNewProject={() => setIsNewProjectModalOpen(true)}
+        onOpenNewProject={openNewProject}
+        onOpenModeration={() => setIsModerationOpen(true)}
       />
 
       {/* Main Container */}
@@ -382,7 +405,7 @@ export default function App() {
             artistBalanceBrl={artistBalanceBrl}
             payoutHistory={payoutHistory}
             onExecutePayout={handleExecutePayout}
-            onOpenNewProject={() => setIsNewProjectModalOpen(true)}
+            onOpenNewProject={openNewProject}
           />
         )}
       </main>
@@ -450,9 +473,13 @@ export default function App() {
         </div>
       )}
 
+      <AccountModals />
+      {isModerationOpen && <ModerationPanel onClose={() => setIsModerationOpen(false)} />}
+
       {/* New Project Modal */}
       {isNewProjectModalOpen && (
         <NewProjectModal
+          artist={account.profile}
           onClose={() => setIsNewProjectModalOpen(false)}
           onSaveProject={(newProj, files: ReleaseFiles) => {
             setProjects((prev) => [newProj, ...prev]);

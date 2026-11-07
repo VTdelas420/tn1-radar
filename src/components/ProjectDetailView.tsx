@@ -1,3 +1,5 @@
+import { useAuth } from '../lib/auth';
+import { reportContent } from '../lib/persistence';
 import React, { useState } from 'react';
 import { MusicProject, ReprisedReview } from '../types/music';
 import {
@@ -12,6 +14,7 @@ import {
   MessageSquare,
   Bookmark,
   X,
+  Flag,
 } from 'lucide-react';
 import { formatBrl, calculateInstallments } from '../utils/monetization';
 
@@ -42,6 +45,23 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   onAddReview,
   onToggleSave,
 }) => {
+  const { requireAccount, profile } = useAuth();
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportState, setReportState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleSendReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportState('sending');
+    try {
+      await reportContent('project', project.id, project.title, reportReason);
+      setReportState('sent');
+      setReportReason('');
+    } catch (err) {
+      console.error(err);
+      setReportState('error');
+    }
+  };
   const [copiedLink, setCopiedLink] = useState(false);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -116,8 +136,74 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
             {copiedLink ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
             <span>{copiedLink ? 'Copiado' : 'Compartilhar'}</span>
           </button>
+
+          <button
+            onClick={() =>
+              requireAccount('report', () => {
+                setReportState('idle');
+                setReportOpen(true);
+              })
+            }
+            className="min-h-[44px] flex items-center gap-2 px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-red-200 rounded-xl transition-colors"
+            aria-label="Denunciar este lançamento"
+          >
+            <Flag className="w-4 h-4" />
+            <span className="hidden sm:inline">Denunciar</span>
+          </button>
         </div>
       </div>
+
+      {reportOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <form
+            onSubmit={handleSendReport}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Denunciar lançamento"
+            className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-3"
+          >
+            <h3 className="text-base font-bold text-white">Denunciar "{project.title}"</h3>
+            {reportState === 'sent' ? (
+              <p className="text-sm text-emerald-300">Denúncia enviada. A moderação vai analisar.</p>
+            ) : (
+              <>
+                <p className="text-xs text-zinc-400">
+                  Conte o motivo: conteúdo ofensivo, música de outra pessoa, artista de fora da região, spam…
+                </p>
+                <textarea
+                  required
+                  rows={4}
+                  maxLength={1000}
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
+                />
+                {reportState === 'error' && (
+                  <p className="text-xs text-red-300">Não foi possível enviar. Tente de novo.</p>
+                )}
+              </>
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setReportOpen(false)}
+                className="min-h-[44px] px-4 text-sm text-zinc-400 hover:text-white"
+              >
+                {reportState === 'sent' ? 'Fechar' : 'Cancelar'}
+              </button>
+              {reportState !== 'sent' && (
+                <button
+                  type="submit"
+                  disabled={reportState === 'sending'}
+                  className="min-h-[44px] px-5 rounded-xl bg-red-500/80 hover:bg-red-500 text-white text-sm font-bold disabled:opacity-50"
+                >
+                  {reportState === 'sending' ? 'Enviando…' : 'Enviar denúncia'}
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Main 2-Column Split: Artwork & Identity on Left, Immediate Tracklist & Purchase CTA on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -339,7 +425,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
           </div>
 
           <button
-            onClick={() => setShowReviewModal(true)}
+            onClick={() => requireAccount('review', () => setShowReviewModal(true))}
             className="min-h-[44px] flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold border border-zinc-700 transition-colors shrink-0"
           >
             <MessageSquare className="w-4 h-4" />
@@ -416,18 +502,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-medium text-zinc-300 block mb-1.5">
-                  Seu Nome
-                </label>
-                <input
-                  type="text"
-                  value={reviewerName}
-                  onChange={(e) => setReviewerName(e.target.value)}
-                  placeholder="Seu nome..."
-                  className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none"
-                />
-              </div>
+              <p className="text-xs text-zinc-400">
+                Publicando como <span className="text-white font-semibold">{profile ? `${profile.name} (@${profile.handle})` : 'você'}</span>
+              </p>
 
               <div>
                 <label className="text-xs font-medium text-zinc-300 block mb-1.5">
