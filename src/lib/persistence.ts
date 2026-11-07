@@ -56,7 +56,8 @@ export async function publishProject(
   // Reviews live in their own collection so anyone can add one without rewriting the release.
   const stored: MusicProject = { ...project, coverArt, tracks, reviews: [] };
   await setDoc(doc(db!, PROJECTS, project.id), { ...stored, ownerUid: uid, createdAt: Date.now() });
-  return { ...stored, reviews: project.reviews };
+  // Keep ownerUid on the in-memory copy too (support modal and profile use it)
+  return { ...stored, ownerUid: uid, reviews: project.reviews } as MusicProject;
 }
 
 export async function saveReview(review: ReprisedReview): Promise<void> {

@@ -25,6 +25,8 @@ export interface AccountProfile {
   state?: string; // 'DF' | 'GO'
   bio?: string;
   links?: { instagram?: string; soundcloud?: string; bandcamp?: string; youtube?: string; spotify?: string };
+  /** Artist's Pix key for direct support (public: shown to supporters). */
+  pixKey?: string;
   createdAt: number;
 }
 

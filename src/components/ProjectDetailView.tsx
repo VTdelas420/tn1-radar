@@ -15,6 +15,8 @@ import {
   Bookmark,
   X,
   Flag,
+  Library,
+  Heart,
 } from 'lucide-react';
 import { formatBrl, calculateInstallments } from '../utils/monetization';
 
@@ -28,6 +30,8 @@ interface ProjectDetailViewProps {
   onTogglePlay: () => void;
   onBack: () => void;
   onOpenCheckout: (project: MusicProject) => void;
+  inLibrary?: boolean;
+  onToggleLibrary?: (projectId: string) => void;
   onAddReview: (review: ReprisedReview) => void;
   onToggleSave?: (projectId: string) => void;
 }
@@ -42,6 +46,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   onTogglePlay,
   onBack,
   onOpenCheckout,
+  inLibrary,
+  onToggleLibrary,
   onAddReview,
   onToggleSave,
 }) => {
@@ -266,41 +272,39 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
           {/* Primary Action Card (Anchoring + Reciprocity + Von Restorff CTA) */}
           <div className="p-5 bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="text-xs text-zinc-400">
-                {project.pricingModel === 'free'
-                  ? 'Download Livre (FLAC 24-bit)'
-                  : project.pricingModel === 'name_your_price'
-                  ? 'Apoio Direto (Pague Quanto Quiser)'
-                  : 'Álbum Digital Lossless'}
-              </div>
-              <div className="text-2xl font-extrabold font-mono text-white mt-0.5 flex items-baseline gap-2 tabular-nums">
-                {project.pricingModel === 'free' ? (
-                  <span className="text-emerald-400">Gratuito</span>
-                ) : project.pricingModel === 'name_your_price' ? (
-                  <span>A partir de {formatBrl(project.minPriceBrl || 10)}</span>
-                ) : (
-                  <span>{formatBrl(project.priceBrl)}</span>
-                )}
-                {project.priceBrl > 30 && (
-                  <span className="text-xs text-zinc-400 font-normal font-sans">
-                    ou {installments[2]?.label}
-                  </span>
-                )}
-              </div>
+              <div className="text-xs text-zinc-400">Ouvir é livre</div>
+              <div className="text-lg font-extrabold text-white mt-0.5">Apoie o artista direto no Pix</div>
               <div className="text-xs text-emerald-400 mt-1 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>90% vai direto para o Pix do artista</span>
+                <span>100% vai para o artista · sem taxa</span>
               </div>
             </div>
 
-            <button
-              onClick={() => onOpenCheckout(project)}
-              className="min-h-[48px] px-6 py-3 bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm rounded-xl shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2 shrink-0"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>{project.pricingModel === 'free' ? 'Baixar Agora' : 'Apoiar / Comprar'}</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+              {onToggleLibrary && (
+                <button
+                  onClick={() => onToggleLibrary(project.id)}
+                  aria-pressed={Boolean(inLibrary)}
+                  className={`min-h-[48px] px-5 py-3 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
+                    inLibrary
+                      ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-100 hover:border-sky-500'
+                  }`}
+                >
+                  {inLibrary ? <CheckCircle2 className="w-4 h-4" /> : <Library className="w-4 h-4" />}
+                  <span>{inLibrary ? 'Na biblioteca' : 'Adicionar à biblioteca'}</span>
+                </button>
+              )}
+              <button
+                onClick={() => onOpenCheckout(project)}
+                className="min-h-[48px] px-6 py-3 bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm rounded-xl shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Heart className="w-4 h-4" />
+                <span>Apoiar com Pix</span>
+              </button>
+            </div>
           </div>
+
 
           {/* Tracklist right in the first viewport (Zero unnecessary scrolling) */}
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-3">

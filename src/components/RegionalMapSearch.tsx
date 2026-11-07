@@ -1196,7 +1196,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       {/* Unified Command Bar (Hick's Law: 3 Clear Controls — Search, 27 States Navigation, Access Mode) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3 bg-black border border-blue-950/90 rounded-2xl items-center shrink-0">
         {/* 1. Search by City, State, DF RA, Artist or Genre */}
-        <div className="md:col-span-5 relative">
+        <div className="md:col-span-7 relative">
           <Search className="w-4 h-4 text-sky-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
@@ -1218,7 +1218,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         </div>
 
         {/* 2. Navigate across all 27 Brazilian States (UFs) */}
-        <div className="md:col-span-4">
+        <div className="md:col-span-5">
           <select
             value={selectedStateFilter}
             onChange={(e) => handleSelectStateFilter(e.target.value)}
@@ -1245,39 +1245,6 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           </select>
         </div>
 
-        {/* 3. Segmented Pricing Filter (Todos / Gratuito / Pago) */}
-        <div className="md:col-span-3 flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800 min-h-[44px]">
-          <button
-            onClick={() => setPriceFilter('all')}
-            className={`flex-1 min-h-[36px] text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
-              priceFilter === 'all'
-                ? 'bg-sky-500 text-black shadow-sm'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setPriceFilter('free')}
-            className={`flex-1 min-h-[36px] text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
-              priceFilter === 'free'
-                ? 'bg-sky-500 text-black shadow-sm'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Gratuitos
-          </button>
-          <button
-            onClick={() => setPriceFilter('paid')}
-            className={`flex-1 min-h-[36px] text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
-              priceFilter === 'paid'
-                ? 'bg-sky-500 text-black shadow-sm'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Pagos
-          </button>
-        </div>
       </div>
 
       {/* Central Pure-Black Tactical Map Canvas (Watch Dogs ctOS / GTA V Inspired HUD) */}
@@ -1540,9 +1507,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                   </span>
                   <span aria-hidden="true" className="text-zinc-600">·</span>
                   <span className="text-sky-400 font-bold font-mono">
-                    {activePinProject.pricingModel === 'free'
-                      ? 'Gratuito'
-                      : formatBrl(activePinProject.priceBrl)}
+                    Livre · apoie no Pix
                   </span>
                 </div>
               </div>

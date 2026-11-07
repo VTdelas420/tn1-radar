@@ -409,8 +409,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         {activeSubTab === 'library' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span>LANÇAMENTOS ADQUIRIDOS ({libraryProjects.length})</span>
-              <span className="text-emerald-400">Streaming Ilimitado + Download Lossless FLAC</span>
+              <span>NA SUA BIBLIOTECA ({libraryProjects.length})</span>
+              <span className="text-emerald-400">Ouça quando quiser, direto do mapa</span>
             </div>
 
             {libraryProjects.length > 0 ? (
@@ -490,13 +490,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                             )}
                           </button>
 
-                          <button
-                            onClick={() => handleDownloadFlac(project)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-300 hover:text-white border border-zinc-800 rounded-lg transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Baixar FLAC (Zip)</span>
-                          </button>
 
                           <button
                             onClick={() => onSelectProject(project)}
@@ -515,7 +508,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 <Disc3 className="w-10 h-10 text-zinc-600 mx-auto" />
                 <h4 className="text-sm font-bold text-white">Sua biblioteca está vazia</h4>
                 <p className="text-xs text-zinc-400 max-w-md mx-auto">
-                  Apoie lançamentos no mapa ou baixe os projetos gratuitos para tê-los salvos com qualidade FLAC master em sua conta.
+                  Abra um lançamento e toque em "Adicionar à biblioteca" para guardá-lo aqui.
                 </p>
               </div>
             )}
@@ -690,7 +683,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-bold rounded-lg transition-all active:scale-95 shadow-sm"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
-                          <span>{project.pricingModel === 'free' ? 'Baixar' : 'Comprar Agora'}</span>
+                          <span>Apoiar</span>
                         </button>
 
                         <button

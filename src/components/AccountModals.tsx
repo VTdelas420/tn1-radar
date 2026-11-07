@@ -172,6 +172,7 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
   );
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [links, setLinks] = useState(profile?.links ?? {});
+  const [pixKey, setPixKey] = useState(profile?.pixKey ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -214,6 +215,7 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
               city,
               state,
               bio: bio.trim().slice(0, 600),
+              ...(pixKey.trim() ? { pixKey: pixKey.trim().slice(0, 77) } : {}),
               links: Object.fromEntries(
                 Object.entries(links).filter(([, v]) => typeof v === 'string' && v.trim())
               ) as typeof links,
@@ -325,6 +327,19 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
                 placeholder="Conte em poucas linhas quem você é e que som faz."
                 className={`${inputClass} py-2.5`}
               />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-300 block mb-1.5">Chave Pix para receber apoio (opcional)</label>
+              <input
+                value={pixKey}
+                onChange={(e) => setPixKey(e.target.value)}
+                placeholder="Chave aleatória ou e-mail"
+                className={inputClass}
+              />
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Fica visível para quem for apoiar. Prefira uma chave aleatória ou e-mail, não CPF nem telefone.
+                O dinheiro vai direto para você; o TN1 Radar não recebe nada.
+              </p>
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium text-zinc-300 block">Links (opcional)</label>

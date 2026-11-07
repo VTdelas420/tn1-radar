@@ -178,7 +178,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-950 bg-zinc-200 hover:bg-white rounded-md transition-all active:scale-95"
             >
               <ShoppingBag className="w-3 h-3" />
-              <span>{project.pricingModel === 'free' ? 'Baixar' : 'Apoiar'}</span>
+              <span>Apoiar</span>
             </button>
           </div>
         </div>

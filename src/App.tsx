@@ -4,6 +4,7 @@ import { loadCatalog, publishProject, saveReview, type ReleaseFiles } from './li
 import { useAuth } from './lib/auth';
 import { AccountModals } from './components/AccountModals';
 import { ModerationPanel } from './components/ModerationPanel';
+import { SupportPixModal } from './components/SupportPixModal';
 import { MusicProject, UserProfile, ReprisedReview } from './types/music';
 import { INITIAL_PROJECTS, INITIAL_USER_PROFILES } from './data/mockProjects';
 import { TopNav } from './components/TopNav';
@@ -252,6 +253,21 @@ export default function App() {
   };
 
   // Toggle saving / wishlisting a project
+  // Library = releases the listener keeps in their profile (no download)
+  const handleToggleLibrary = (projectId: string) =>
+    account.requireAccount('generic', () =>
+      setUserProfiles((prev) =>
+        prev.map((u) => {
+          if (u.id !== currentUser.id) return u;
+          const lib = u.libraryProjectIds || [];
+          return {
+            ...u,
+            libraryProjectIds: lib.includes(projectId) ? lib.filter((id) => id !== projectId) : [projectId, ...lib],
+          };
+        })
+      )
+    );
+
   const handleToggleSaveProject = (projectId: string) => {
     setUserProfiles((prev) =>
       prev.map((u) => {
@@ -440,6 +456,8 @@ export default function App() {
             onOpenCheckout={(proj) => setCheckoutProject(proj)}
             onAddReview={handleAddReview}
             onToggleSave={handleToggleSaveProject}
+            inLibrary={currentUser.libraryProjectIds?.includes(selectedProject.id)}
+            onToggleLibrary={handleToggleLibrary}
           />
         ) : activeTab === 'map' ? (
           /* THE MAP IS THE PRIMARY HOME PAGE */
@@ -518,11 +536,8 @@ export default function App() {
 
       {/* Checkout Modal with Brazilian Payment Rails */}
       {checkoutProject && (
-        <CheckoutModal
-          project={checkoutProject}
-          onClose={() => setCheckoutProject(null)}
-          onSuccessPayment={handleSuccessPayment}
-        />
+        // Launch phase: support goes straight to the artist's Pix key (no payment provider)
+        <SupportPixModal project={checkoutProject} onClose={() => setCheckoutProject(null)} />
       )}
 
       {/* Reprised User Profile Modal */}
