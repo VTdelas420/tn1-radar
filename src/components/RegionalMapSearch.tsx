@@ -463,10 +463,11 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           if (!map.hasLayer(neighborhoodsLayerRef.current)) {
             neighborhoodsLayerRef.current.addTo(map);
           }
+          // Neighbourhood outlines hidden (cleaner map); they light up on hover
           neighborhoodsLayerRef.current.setStyle({
             color: '#22d3ee',
             weight: z >= 13 ? 1.4 : 1.0,
-            opacity: z >= 11 ? 0.8 : 0.55,
+            opacity: 0,
             dashArray: '5, 5',
             fillColor: '#06b6d4',
             fillOpacity: 0.0,
@@ -693,7 +694,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           style: () => ({
             color: '#22d3ee',
             weight: 1.1,
-            opacity: 0.7,
+            opacity: 0,
             dashArray: '5, 5',
             fillColor: '#06b6d4',
             fillOpacity: 0.0,
@@ -729,7 +730,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               },
               mouseout: (e) => {
                 if (isDisposed) return;
-                nbLayer.resetStyle(e.target);
+                syncLayersByZoom(map.getZoom());
                 setHoveredSectorName(null);
               },
               click: (e) => {
