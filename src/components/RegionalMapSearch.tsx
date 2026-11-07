@@ -27,6 +27,8 @@ import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/r
 import { createTacticalUrbanCanvasLayer } from '../utils/tacticalUrbanLayer';
 import {
   REGION_BOUNDS,
+  REGION_CAMERA_BOUNDS,
+  REGION_MIN_ZOOM,
   REGION_CENTER,
   REGION_NAME,
   ENTORNO_CITIES,
@@ -386,7 +388,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     const map = L.map(mapContainerRef.current, {
       center: BRAZIL_CENTER,
       zoom: DEFAULT_ZOOM,
-      minZoom: 3.5,
+      minZoom: REGION_MIN_ZOOM,
       maxZoom: 18,
       zoomSnap: 0.25,
       zoomDelta: 0.75,
@@ -394,11 +396,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       zoomControl: false,
       attributionControl: false,
       renderer: canvasRenderer,
-      maxBounds: [
-        [-40.0, -80.0],
-        [10.0, -28.0],
-      ],
-      maxBoundsViscosity: 0.9,
+      maxBounds: REGION_CAMERA_BOUNDS,
+      maxBoundsViscosity: 1.0,
     });
 
     mapInstanceRef.current = map;
@@ -453,14 +452,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       if (citiesLayerRef.current && map.hasLayer(citiesLayerRef.current)) {
         citiesLayerRef.current.setStyle((feature) =>
           featureInRegion(feature)
-            ? {
-                color: z >= 11 ? '#0284c7' : z >= 7 ? '#38bdf8' : z >= 5.5 ? '#2563eb' : '#1d4ed8',
-                weight: z >= 11 ? 1.4 : z >= 8 ? 1.1 : z >= 6 ? 0.65 : 0.3,
-                opacity: z >= 13 ? 0.5 : z >= 7 ? 0.75 : z >= 5.5 ? 0.45 : 0.22,
-                fillColor: '#020617',
-                // At zoom >= 7.5, make polygon fill 0% opacity so real OSM streets & 2.5D buildings in tilePane are 100% crisp
-                fillOpacity: z >= 7.5 ? 0.0 : z >= 5.5 ? 0.35 : 0.15,
-              }
+            ? // Outlines hidden (cleaner map); the polygon still lights up on hover
+              { color: '#38bdf8', weight: 1.1, opacity: 0, fillColor: '#020617', fillOpacity: 0 }
             : { ...DIM_POLY_STYLE, fillOpacity: z >= 7.5 ? 0.7 : DIM_POLY_STYLE.fillOpacity }
         );
       }
@@ -486,13 +479,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       if (statesLayerRef.current && map.hasLayer(statesLayerRef.current)) {
         statesLayerRef.current.setStyle((feature) =>
           (feature?.properties?.sigla || '').toUpperCase() === 'DF'
-            ? {
-                color: '#38bdf8',
-                weight: z >= 6 ? 2.2 : 1.7,
-                opacity: z >= 12 ? 0.6 : 0.95,
-                fillColor: '#0284c7',
-                fillOpacity: z >= 7.5 ? 0.0 : 0.01,
-              }
+            ? { color: '#38bdf8', weight: 1.7, opacity: 0, fillColor: '#0284c7', fillOpacity: 0 }
             : { ...DIM_POLY_STYLE, weight: 1, opacity: 0.6, fillOpacity: z >= 7.5 ? 0.0 : 0.45 }
         );
       }
@@ -520,13 +507,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         const statesLayer = L.geoJSON(statesGeoJson, {
           style: (feature) =>
             (feature?.properties?.sigla || '').toUpperCase() === 'DF'
-              ? {
-                  color: '#38bdf8',
-                  weight: 1.7,
-                  opacity: 0.95,
-                  fillColor: '#0284c7',
-                  fillOpacity: 0.01,
-                }
+              ? { color: '#38bdf8', weight: 1.7, opacity: 0, fillColor: '#0284c7', fillOpacity: 0 }
               : { ...DIM_POLY_STYLE, weight: 1, opacity: 0.6, fillOpacity: 0.45 },
           onEachFeature: (feature, layer) => {
             const sigla = (feature.properties?.sigla || '').toUpperCase();
@@ -607,13 +588,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         const citiesLayer = L.geoJSON(citiesGeoJson, {
           style: (feature) =>
             featureInRegion(feature)
-              ? {
-                  color: '#1d4ed8',
-                  weight: 0.35,
-                  opacity: 0.25,
-                  fillColor: '#020617',
-                  fillOpacity: 0.2,
-                }
+              ? { color: '#38bdf8', weight: 1.1, opacity: 0, fillColor: '#020617', fillOpacity: 0 }
               : DIM_POLY_STYLE,
           onEachFeature: (feature, layer) => {
             const cityName = feature.properties?.n;
@@ -1405,8 +1380,6 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 ? hoveredSectorName
                 : activeStateSector
                 ? `Setor: ${activeStateSector.name} (${activeStateSector.sigla})`
-                : currentZoom < 7
-                ? `Lançamentos só no ${REGION_NAME} por enquanto · resto do Brasil em breve`
                 : `${REGION_NAME} · Dê zoom para revelar RAs, ruas, quadras e prédios 2.5D`}
             </span>
           </div>

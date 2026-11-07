@@ -38,11 +38,14 @@ export const REGION_BOUNDS: [[number, number], [number, number]] = [
   [-15.0, -47.15],
 ];
 
-/** Wider rectangle used to keep the camera near the region. */
+/** The camera cannot pan beyond this rectangle (region + a small margin). */
 export const REGION_CAMERA_BOUNDS: [[number, number], [number, number]] = [
-  [-19.5, -51.5],
-  [-12.5, -44.5],
+  [-17.4, -49.4],
+  [-14.6, -46.7],
 ];
+
+/** Farthest zoom-out: the whole region, nothing more. */
+export const REGION_MIN_ZOOM = 8.5;
 
 export const REGION_CENTER: [number, number] = [-15.85, -47.95];
 
