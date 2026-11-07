@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { createTacticalUrbanCanvasLayer } from '../utils/tacticalUrbanLayer';
+import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import { REGION_CAMERA_BOUNDS, isInRegion } from '../config/region';
 
 interface PinDropMiniMapProps {
@@ -40,7 +40,7 @@ export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChan
       maxBoundsViscosity: 1.0,
     });
     mapRef.current = map;
-    createTacticalUrbanCanvasLayer().addTo(map);
+    createTacticalVectorLayer().addTo(map);
 
     const marker = L.marker([lat, lng], {
       draggable: true,

@@ -24,7 +24,7 @@ import {
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
-import { createTacticalUrbanCanvasLayer } from '../utils/tacticalUrbanLayer';
+import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import {
   REGION_BOUNDS,
   REGION_CAMERA_BOUNDS,
@@ -411,7 +411,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       .addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> · IBGE');
 
     // 0A. Custom Tactical Urban Canvas Layer (Highways, Arterial Avenues, Streets, Quadras & 2.5D Wireframe Buildings on Pure Black)
-    const tacticalUrbanCanvas = createTacticalUrbanCanvasLayer();
+    const tacticalUrbanCanvas = createTacticalVectorLayer();
     tacticalUrbanCanvas.addTo(map);
 
     // 0B. Tactical Lat/Lng Graticule Grid (Watch Dogs ctOS / GTA Radar Grid on Pure Black Canvas)
