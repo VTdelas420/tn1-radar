@@ -50,6 +50,9 @@ interface UserProfileViewProps {
   }[];
   onExecutePayout: (amount: number, method: string, destination: string) => Promise<boolean>;
   onOpenNewProject: () => void;
+  /** Real accounts: payments are not live yet, so the simulated balance/payout tab is hidden. */
+  hideEarnings?: boolean;
+  onEditProfile?: () => void;
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
@@ -67,6 +70,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   payoutHistory,
   onExecutePayout,
   onOpenNewProject,
+  hideEarnings = false,
+  onEditProfile,
 }) => {
   type ProfileSubTab = 'library' | 'reviews' | 'saved' | 'my_projects' | 'earnings';
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('library');
@@ -138,8 +143,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
             <div className="flex items-center gap-2 text-xs text-zinc-400">
               <MapPin className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-zinc-200">{user.city}, {user.state}</span>
-              <span aria-hidden="true">·</span>
+              {user.city && (
+                <>
+                  <span className="text-zinc-200">{user.city}, {user.state}</span>
+                  <span aria-hidden="true">·</span>
+                </>
+              )}
               <span>Desde {user.joinedDate}</span>
             </div>
 
@@ -151,6 +160,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
         {/* Musical Identity & Genres (Zero Vanity Numbers) */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
+          {onEditProfile && (
+            <button
+              onClick={onEditProfile}
+              className="min-h-[40px] px-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 font-semibold hover:border-sky-500"
+            >
+              Editar perfil
+            </button>
+          )}
           {user.favoriteGenres.map((genre) => (
             <span
               key={genre}
@@ -370,6 +387,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           )}
 
           {/* LUCROS & PIX: MOVED INTO PERFIL */}
+          {!hideEarnings && (
           <button
             onClick={() => setActiveSubTab('earnings')}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-xl transition-all whitespace-nowrap ${
@@ -384,6 +402,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               {formatBrl(artistBalanceBrl)}
             </span>
           </button>
+          )}
         </div>
 
         {/* 1. MINHA BIBLIOTECA (Purchased/Unlocked) */}
@@ -849,7 +868,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         )}
 
         {/* 5. LUCROS & PIX: DENTRO DO PERFIL */}
-        {activeSubTab === 'earnings' && (
+        {activeSubTab === 'earnings' && !hideEarnings && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <AnalyticsDashboard
               projects={myProjects.length > 0 ? myProjects : allProjects}

@@ -62,7 +62,81 @@ export default function App() {
   }, [syncStatus]);
 
   // Current logged in listener profile (Thiago Mendes, @thiagom_critica)
-  const currentUser = userProfiles.find((u) => u.id === 'usr-1') || userProfiles[0];
+  // Signed-in account → its own profile entry (lists kept per account in this browser);
+  // signed-out → the demo listener, only used when Firebase is off.
+  const accountUid = account.profile?.uid ?? null;
+  useEffect(() => {
+    const prof = account.profile;
+    if (!prof) return;
+    let saved: Partial<UserProfile> = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(`tn1.lists.${prof.uid}`) || '{}');
+    } catch {
+      /* storage unavailable: start empty */
+    }
+    setUserProfiles((prev) => {
+      const existing = prev.find((u) => u.id === prof.uid);
+      const entry: UserProfile = {
+        id: prof.uid,
+        name: prof.name,
+        handle: `@${prof.handle}`,
+        bio: prof.bio || (prof.role === 'artist' ? 'Artista do DF + Entorno.' : 'Ouvinte do TN1 Radar.'),
+        city: prof.city || '',
+        state: prof.state || '',
+        joinedDate: new Date(prof.createdAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+        ratedProjectsCount: 0,
+        reviewsCount: 0,
+        favoriteGenres: [],
+        recentReviews: existing?.recentReviews ?? [],
+        topFavorites: existing?.topFavorites ?? saved.topFavorites ?? [],
+        libraryProjectIds: existing?.libraryProjectIds ?? saved.libraryProjectIds ?? [],
+        savedProjectIds: existing?.savedProjectIds ?? saved.savedProjectIds ?? [],
+        createdProjectIds: existing?.createdProjectIds ?? [],
+      };
+      return [entry, ...prev.filter((u) => u.id !== prof.uid)];
+    });
+  }, [account.profile]);
+
+  const baseUser =
+    (accountUid && userProfiles.find((u) => u.id === accountUid)) ||
+    userProfiles.find((u) => u.id === 'usr-1') ||
+    userProfiles[0];
+  // Reviews and releases of the account come from the catalog (so they survive reloads)
+  const currentUser: UserProfile = accountUid
+    ? (() => {
+        const mine = projects.flatMap((p) => p.reviews).filter((r) => r.userId === accountUid);
+        const recent = [...new Map([...baseUser.recentReviews, ...mine].map((r) => [r.id, r])).values()];
+        return {
+          ...baseUser,
+          recentReviews: recent,
+          reviewsCount: recent.length,
+          ratedProjectsCount: new Set(recent.map((r) => r.projectId)).size,
+          createdProjectIds: [
+            ...new Set([
+              ...(baseUser.createdProjectIds ?? []),
+              ...projects.filter((p) => (p as { ownerUid?: string }).ownerUid === accountUid).map((p) => p.id),
+            ]),
+          ],
+        };
+      })()
+    : baseUser;
+
+  // Persist the account's lists (top 5, library, saved) in this browser
+  useEffect(() => {
+    if (!accountUid) return;
+    try {
+      localStorage.setItem(
+        `tn1.lists.${accountUid}`,
+        JSON.stringify({
+          topFavorites: baseUser.topFavorites,
+          libraryProjectIds: baseUser.libraryProjectIds,
+          savedProjectIds: baseUser.savedProjectIds,
+        })
+      );
+    } catch {
+      /* storage unavailable */
+    }
+  }, [accountUid, baseUser.topFavorites, baseUser.libraryProjectIds, baseUser.savedProjectIds]);
 
   // The MAP is the primary home page by default
   const [activeTab, setActiveTab] = useState<'map' | 'reprised' | 'profile'>('map');
@@ -390,7 +464,23 @@ export default function App() {
           />
         ) : (
           /* PERFIL TAB: Top 5, Biblioteca, Avaliações, Salvos, Meus Projetos (Condicional), Lucros & Pix */
+          account.enabled && !account.profile ? (
+            <section className="max-w-lg mx-auto mt-10 p-8 text-center bg-zinc-950 border border-zinc-800 rounded-2xl space-y-4">
+              <h2 className="text-xl font-bold text-white">Seu perfil no TN1 Radar</h2>
+              <p className="text-sm text-zinc-400">
+                Entre para ver suas avaliações, seus lançamentos salvos e, se for artista, publicar no mapa.
+              </p>
+              <button
+                onClick={() => (account.user ? account.openProfileSetup(false) : account.openAuth('generic'))}
+                className="min-h-[44px] px-6 rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm"
+              >
+                {account.user ? 'Criar meu perfil' : 'Entrar ou criar conta'}
+              </button>
+            </section>
+          ) : (
           <UserProfileView
+            hideEarnings={account.enabled}
+            onEditProfile={account.enabled ? () => account.openProfileSetup(false) : undefined}
             user={currentUser}
             allProjects={projects}
             currentProjectId={currentProject?.id}
@@ -407,6 +497,7 @@ export default function App() {
             onExecutePayout={handleExecutePayout}
             onOpenNewProject={openNewProject}
           />
+          )
         )}
       </main>
 
