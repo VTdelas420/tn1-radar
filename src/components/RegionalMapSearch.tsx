@@ -177,7 +177,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   const citiesLayerRef = useRef<L.GeoJSON | null>(null);
   const neighborhoodsLayerRef = useRef<L.GeoJSON | null>(null);
   const neighborhoodNodesRef = useRef<
-    { b: string; c: string; u: string; lat: number; lng: number }[]
+    { b: string; c: string; u: string; lat: number; lng: number; t: number }[]
   >([]);
   const statesLayerRef = useRef<L.GeoJSON | null>(null);
   const stateFeatureLayersRef = useRef<Map<string, L.Layer>>(new Map());
@@ -399,13 +399,16 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       zoomDelta: 0.75,
       wheelPxPerZoomLevel: 90,
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: true,
       renderer: canvasRenderer,
       maxBounds: REGION_CAMERA_BOUNDS,
       maxBoundsViscosity: 1.0,
     });
 
     mapInstanceRef.current = map;
+    map.attributionControl
+      .setPrefix(false)
+      .addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> · IBGE');
 
     // 0A. Custom Tactical Urban Canvas Layer (Highways, Arterial Avenues, Streets, Quadras & 2.5D Wireframe Buildings on Pure Black)
     const tacticalUrbanCanvas = createTacticalUrbanCanvasLayer();
@@ -561,9 +564,15 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       });
 
     // 2. Load All 5,487 Brazilian Municipalities & 35 DF Administrative Regions Mesh
-    fetch('/data/brazil-cities.json', { signal: abortController.signal })
-      .then((res) => res.json())
-      .then((citiesGeoJson) => {
+    Promise.all([
+      fetch('/data/brazil-cities.json', { signal: abortController.signal }).then((res) => res.json()),
+      // Valparaíso de Goiás is missing from the national dataset (IBGE polygon)
+      fetch('/data/region-extra-cities.json', { signal: abortController.signal })
+        .then((res) => res.json())
+        .catch(() => ({ features: [] })),
+    ])
+      .then(([citiesGeoJson, extraCities]) => {
+        citiesGeoJson.features = [...(citiesGeoJson.features || []), ...(extraCities.features || [])];
         if (isDisposed || mapInstanceRef.current !== map) return;
 
         const citiesLayer = L.geoJSON(citiesGeoJson, {
@@ -616,7 +625,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       });
 
     // 3. Load City Neighborhood Divisions (Divisões de Bairros & Setores Urbanos)
-    fetch('/data/brazil-neighborhoods.json', { signal: abortController.signal })
+    // Bairros of DF + Entorno from OpenStreetMap (built by scripts/build-region-geodata.mjs)
+    fetch('/data/region-neighborhoods.json', { signal: abortController.signal })
       .then((res) => res.json())
       .then((nbGeoJson) => {
         if (isDisposed || mapInstanceRef.current !== map) return;
@@ -626,7 +636,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           (f: GeoJSON.Feature) =>
             typeof f.properties?.lat === 'number' && isInRegion(f.properties.lat, f.properties.lng, 15)
         );
-        const nodes: { b: string; c: string; u: string; lat: number; lng: number }[] = [];
+        const nodes: { b: string; c: string; u: string; lat: number; lng: number; t: number }[] = [];
         for (const feat of nbGeoJson.features || []) {
           if (feat.properties?.b && typeof feat.properties?.lat === 'number') {
             nodes.push({
@@ -635,6 +645,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               u: feat.properties.u || '',
               lat: feat.properties.lat,
               lng: feat.properties.lng,
+              t: feat.properties.t ?? 1,
             });
           }
         }
@@ -902,8 +913,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       });
 
       // 2. City Neighborhood Labels (Divisões de Bairros) at zoom >= 9.5
-      if (currentZoom >= 9.5 && neighborhoodNodesRef.current.length > 0) {
+      // Tier 1 (bairros/setores) from z11; tier 2 (small units, e.g. each superquadra) from z14
+      if (currentZoom >= 11 && neighborhoodNodesRef.current.length > 0) {
         neighborhoodNodesRef.current.forEach((nb) => {
+          if (nb.t === 2 && currentZoom < 14) return;
+          const b = map.getBounds().pad(0.1);
+          if (!b.contains([nb.lat, nb.lng])) return;
           const pt = map.latLngToContainerPoint([nb.lat, nb.lng]);
           const collides = placedLabelPoints.some(
             (p) => Math.abs(p.x - pt.x) < minPixelDistX && Math.abs(p.y - pt.y) < minPixelDistY

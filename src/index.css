@@ -82,3 +82,13 @@ input[type="range"] {
   mix-blend-mode: screen;
 }
 
+
+/* Map credits (OpenStreetMap / IBGE), styled for the dark map */
+.leaflet-container .leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.7);
+  color: #64748b;
+  font-size: 9px;
+}
+.leaflet-container .leaflet-control-attribution a {
+  color: #7dd3fc;
+}
