@@ -141,6 +141,11 @@ const MAJOR_INTERIOR_CITIES = [
 ];
 
 const BRAZIL_CENTER: [number, number] = REGION_CENTER;
+
+// A place with this many releases folds into one density ring while zoomed out
+const DENSITY_THRESHOLD = 8;
+const DENSITY_MAX_ZOOM = 11.5;
+const DENSITY_DIVE_ZOOM = 13;
 const DEFAULT_ZOOM = 9;
 
 export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
@@ -927,10 +932,39 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     }
   }, [currentZoom, filteredProjects]);
 
+  // Density rings: when zoomed out, a place with many releases shows ONE orbital
+  // ring (no count, no artist highlighted). Clicking it dives to neighbourhood level.
+  const densityGroups = useMemo(() => {
+    if (currentZoom >= DENSITY_MAX_ZOOM) return [];
+    const byPlace = new Map<string, MusicProject[]>();
+    for (const p of filteredProjects) {
+      const key = `${(p.state || '').toUpperCase()}|${p.city.trim().toLowerCase()}`;
+      const list = byPlace.get(key) ?? [];
+      list.push(p);
+      byPlace.set(key, list);
+    }
+    return [...byPlace.entries()]
+      .filter(([, list]) => list.length >= DENSITY_THRESHOLD)
+      .map(([key, list]) => ({
+        key,
+        name: list[0].city,
+        lat: list.reduce((a, p) => a + p.coordinates.lat, 0) / list.length,
+        lng: list.reduce((a, p) => a + p.coordinates.lng, 0) / list.length,
+        ids: new Set(list.map((p) => p.id)),
+      }));
+  }, [filteredProjects, currentZoom]);
+
+  // Releases drawn as individual pins (everything not folded into a density ring)
+  const pinProjects = useMemo(() => {
+    if (densityGroups.length === 0) return filteredProjects;
+    const folded = new Set(densityGroups.flatMap((g) => [...g.ids]));
+    return filteredProjects.filter((p) => !folded.has(p.id));
+  }, [filteredProjects, densityGroups]);
+
   // Compute current spread positions & multi-point area peers
   const currentSpreadMap = useMemo(
-    () => spreadOverlappingProjects(filteredProjects, currentZoom),
-    [filteredProjects, currentZoom]
+    () => spreadOverlappingProjects(pinProjects, currentZoom),
+    [pinProjects, currentZoom]
   );
 
   // Find all projects sharing the same area/cluster as the currently active pin
@@ -965,7 +999,33 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
     const drawnHubOrigins = new Set<string>();
 
-    filteredProjects.forEach((proj) => {
+    // Orbital density rings (same size for every place)
+    densityGroups.forEach((g) => {
+      const ringHtml = `
+        <div class="relative cursor-pointer" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+          <div class="absolute inset-0 rounded-full border border-sky-400/40 animate-ping"></div>
+          <div class="absolute inset-1 rounded-full border-2 border-dashed border-sky-400/80" style="animation: spin 9s linear infinite;"></div>
+          <div class="absolute inset-[14px] rounded-full border-2 border-sky-300 bg-black/80 shadow-[0_0_18px_rgba(56,189,248,0.8)]"></div>
+          <div class="relative w-2 h-2 rounded-full bg-sky-300"></div>
+          <div class="absolute left-1/2 -translate-x-1/2 -bottom-6 px-2 py-0.5 rounded-md bg-black/95 border border-sky-500/50 text-[10px] font-mono whitespace-nowrap text-sky-100 pointer-events-none">
+            ${g.name} · explorar
+          </div>
+        </div>`;
+      const ring = L.marker([g.lat, g.lng], {
+        icon: L.divIcon({ html: ringHtml, className: 'custom-substream-pin', iconSize: [64, 64], iconAnchor: [32, 32] }),
+        zIndexOffset: 400,
+        keyboard: true,
+        title: `Explorar lançamentos em ${g.name}`,
+      });
+      ring.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        setActivePinProject(null);
+        map.flyTo([g.lat, g.lng], DENSITY_DIVE_ZOOM, { duration: 0.9 });
+      });
+      ring.addTo(group);
+    });
+
+    pinProjects.forEach((proj) => {
       const pos = currentSpreadMap.get(proj.id) || {
         id: proj.id,
         lat: proj.coordinates.lat,
@@ -1071,7 +1131,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
       marker.addTo(group);
     });
-  }, [filteredProjects, currentSpreadMap, activePinProject, currentProjectId, isPlaying, currentZoom, flyToProjectPin]);
+  }, [pinProjects, densityGroups, currentSpreadMap, activePinProject, currentProjectId, isPlaying, currentZoom, flyToProjectPin]);
 
   const handleZoomIn = () => {
     mapInstanceRef.current?.zoomIn();

@@ -195,10 +195,11 @@ export function spreadOverlappingProjects<
   const result = new Map<string, SpreadPinPosition>();
   if (projects.length === 0) return result;
 
-  // Convert ~92 screen pixels into degrees at the active Leaflet zoom level (supports zoom 3.5 to 18)
+  // Pins are 44 px wide: keep ~52 px between centres, and only group pins that
+  // would actually touch (~40 px), so nearby RAs keep their real positions.
   const degPerPixel = 1.40625 / Math.pow(2, Math.max(3, zoomLevel));
-  const minSeparationDeg = Math.max(0.0005, Math.min(2.4, degPerPixel * 92));
-  const clusterRadiusThreshold = Math.max(0.035, minSeparationDeg * 0.85);
+  const minSeparationDeg = Math.max(0.0003, Math.min(2.4, degPerPixel * 52));
+  const clusterRadiusThreshold = degPerPixel * 40;
 
   // 1. Group projects that share the same city name or nearby base coordinates
   const clusters: { centerLat: number; centerLng: number; cityKey: string; items: T[] }[] = [];
@@ -207,13 +208,17 @@ export function spreadOverlappingProjects<
     const lat = proj.coordinates.lat;
     const lng = proj.coordinates.lng;
     const cityKey = (proj.city || '').trim().toLowerCase();
-    const existingCluster = clusters.find(
-      (c) =>
-        (cityKey && c.cityKey === cityKey) ||
-        Math.hypot(c.centerLat - lat, c.centerLng - lng) < clusterRadiusThreshold
-    );
+    const existingCluster = clusters.find((c) => {
+      const dist = Math.hypot(c.centerLat - lat, c.centerLng - lng);
+      // Same place name groups a bit more eagerly than plain proximity
+      return dist < clusterRadiusThreshold || (cityKey !== '' && c.cityKey === cityKey && dist < clusterRadiusThreshold * 2);
+    });
     if (existingCluster) {
       existingCluster.items.push(proj);
+      // Keep the cluster centred on the mean of its members, not on the first one
+      const n = existingCluster.items.length;
+      existingCluster.centerLat += (lat - existingCluster.centerLat) / n;
+      existingCluster.centerLng += (lng - existingCluster.centerLng) / n;
     } else {
       clusters.push({ centerLat: lat, centerLng: lng, cityKey, items: [proj] });
     }

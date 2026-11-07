@@ -79,7 +79,24 @@ test('spreadOverlappingProjects separates multiple releases in the exact same ci
   for (let i = 0; i < items.length; i++) {
     for (let j = i + 1; j < items.length; j++) {
       const dist = Math.hypot(items[i].lat - items[j].lat, items[i].lng - items[j].lng);
-      assert.ok(dist >= 0.007, `Expected street-level pins ${i} and ${j} to be separated, got ${dist}`);
+      // Pins are 44 px wide; at zoom 14 one pixel is 1.40625 / 2^14 degrees
+      const minDeg = (1.40625 / Math.pow(2, 14)) * 44;
+      assert.ok(dist >= minDeg, `Expected street-level pins ${i} and ${j} not to touch, got ${dist}`);
     }
+  }
+});
+
+test('spreadOverlappingProjects keeps separate DF RAs at their real positions at region zoom', () => {
+  const ras = [
+    { id: 'ceilandia', city: 'Ceilândia', coordinates: { lat: -15.8205, lng: -48.1132 } },
+    { id: 'plano', city: 'Brasília (Plano Piloto)', coordinates: { lat: -15.7938, lng: -47.8827 } },
+    { id: 'gama', city: 'Gama', coordinates: { lat: -16.0169, lng: -48.0652 } },
+  ];
+  const spread = spreadOverlappingProjects(ras, 9);
+  for (const ra of ras) {
+    const pos = spread.get(ra.id)!;
+    assert.equal(pos.isDisplaced, false, `${ra.id} should not be moved`);
+    assert.equal(pos.lat, ra.coordinates.lat);
+    assert.equal(pos.lng, ra.coordinates.lng);
   }
 });
