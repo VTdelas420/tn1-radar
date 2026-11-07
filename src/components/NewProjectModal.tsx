@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { MusicProject, PricingModel } from '../types/music';
 import type { ReleaseFiles } from '../lib/persistence';
+import { PinDropMiniMap } from './PinDropMiniMap';
 import {
   REGION_LOCATIONS,
   REGION_NAME,
@@ -620,6 +621,17 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       </optgroup>
                     </select>
                   </div>
+
+                  {/* Pin-drop: exact street/block inside the chosen RA or city */}
+                  <PinDropMiniMap
+                    lat={lat}
+                    lng={lng}
+                    focusKey={`${city}|${state}`}
+                    onChange={(la, ln) => {
+                      setLat(la);
+                      setLng(ln);
+                    }}
+                  />
 
                   {/* Device location: required to publish; optional to place the pin */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">

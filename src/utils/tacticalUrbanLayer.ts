@@ -128,7 +128,16 @@ export function createTacticalUrbanCanvasLayer(): L.Layer {
 
           const rawTypes = new Uint8Array(256 * 256);
           for (let i = 0, p = 0; i < src.length; i += 4, p++) {
-            rawTypes[p] = classifyOsmPixel(src[i], src[i + 1], src[i + 2], z);
+            const t = classifyOsmPixel(src[i], src[i + 1], src[i + 2], z);
+            // Level of detail: zoomed out, keep only highways + water (local streets,
+            // buildings and the raster's blurry text read as noise there).
+            // Water returns at z11, streets at z12, buildings and labels at z14.
+            rawTypes[p] =
+              (z < 12 && (t === TYPE_STREET || t === TYPE_BUILDING || t === TYPE_LABEL_OR_BORDER)) ||
+              (z < 14 && (t === TYPE_BUILDING || t === TYPE_LABEL_OR_BORDER))
+              || (z < 11 && t === TYPE_WATER) // thin cerrado creeks look like cracks when zoomed out
+                ? TYPE_LAND
+                : t;
           }
 
           // Pass 1.5: Morphological Despeckle Filter
