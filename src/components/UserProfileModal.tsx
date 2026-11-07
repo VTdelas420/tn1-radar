@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEscape } from '../lib/useEscape';
 import { UserProfile, MusicProject } from '../types/music';
 import {
   X,
@@ -26,6 +27,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onSelectProject,
   onPlayProject,
 }) => {
+  useEscape(true, onClose);
   if (!profile) return null;
 
   return (

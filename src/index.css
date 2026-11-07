@@ -168,7 +168,7 @@ input[type="range"] {
 .tn1-pin.is-selected .tn1-pin__lift,
 .tn1-pin.is-playing .tn1-pin__lift { scale: 1.2; }
 
-/* The light: a 16×16 gradient enlarged without smoothing, so its edges show square steps */
+/* The light: a 28×28 gradient enlarged without smoothing, so its edges show square steps */
 .tn1-pin__light {
   position: absolute;
   inset: calc(var(--pin) * -0.6);

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import { UserProfile, MusicProject, ReprisedReview } from '../types/music';
 import {
   User,
@@ -898,6 +899,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
   onClose,
   onSave,
 }) => {
+  useEscape(true, onClose);
   const [selectedIds, setSelectedIds] = useState<string[]>([
     ...currentTopFavorites,
   ]);

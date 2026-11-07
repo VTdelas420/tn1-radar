@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
+import { isDemoMode, isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
 import { loadCatalog, loadEvents, publishEvent, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
 import { useAuth } from './lib/auth';
 import { AccountModals } from './components/AccountModals';
@@ -14,7 +14,6 @@ import { ReprisedCommunity } from './components/ReprisedCommunity';
 import { UserProfileModal } from './components/UserProfileModal';
 import { UserProfileView } from './components/UserProfileView';
 import { AudioPlayerBottomBar } from './components/AudioPlayerBottomBar';
-import { CheckoutModal } from './components/CheckoutModal';
 import { NewProjectModal } from './components/NewProjectModal';
 import { NewEventModal } from './components/NewEventModal';
 import { EventDetailModal } from './components/EventDetailModal';
@@ -26,6 +25,7 @@ import { formatBrl } from './utils/monetization';
 export default function App() {
   const account = useAuth();
   const [isModerationOpen, setIsModerationOpen] = useState(false);
+  const [demoNoticeOpen, setDemoNoticeOpen] = useState(isDemoMode);
   // Publishing needs an artist account (opens login / profile setup first)
   const openNewProject = () => account.requireAccount('publish', () => setIsNewProjectModalOpen(true), { artist: true });
   const [projects, setProjects] = useState<MusicProject[]>(INITIAL_PROJECTS);
@@ -528,7 +528,7 @@ export default function App() {
             </section>
           ) : (
           <UserProfileView
-            hideEarnings={account.enabled}
+            hideEarnings
             onEditProfile={account.enabled ? () => account.openProfileSetup(false) : undefined}
             user={currentUser}
             allProjects={projects}
@@ -607,6 +607,22 @@ export default function App() {
               ×
             </button>
           )}
+        </div>
+      )}
+
+      {demoNoticeOpen && !syncStatus && (
+        <div
+          role="status"
+          className="fixed top-16 md:top-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-md px-4 py-2.5 rounded-xl border border-athos-500/50 bg-black/90 text-sm text-athos-100 shadow-xl flex items-center gap-3"
+        >
+          <span className="flex-1">Versão de demonstração. O que você publicar aqui fica só neste navegador.</span>
+          <button
+            onClick={() => setDemoNoticeOpen(false)}
+            className="min-w-[36px] min-h-[36px] text-athos-200 hover:text-white"
+            aria-label="Fechar aviso"
+          >
+            ×
+          </button>
         </div>
       )}
 

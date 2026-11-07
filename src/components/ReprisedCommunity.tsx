@@ -1,5 +1,6 @@
 import { useAuth } from '../lib/auth';
 import React, { useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import { MusicProject, ReprisedReview, UserProfile } from '../types/music';
 import {
   Star,
@@ -33,6 +34,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
   const [activeFilter, setActiveFilter] = useState<'all' | '5stars' | '4plus'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showWriteModal, setShowWriteModal] = useState<boolean>(false);
+  useEscape(showWriteModal, () => setShowWriteModal(false));
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id || '');
   const [newRating, setNewRating] = useState<number>(5.0);

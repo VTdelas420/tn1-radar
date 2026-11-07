@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { MusicProject } from '../types/music';
 import type { ReleaseFiles } from '../lib/persistence';
 import { PinDropMiniMap } from './PinDropMiniMap';
+import { isDemoMode } from '../lib/firebase';
 import {
   REGION_LOCATIONS,
   REGION_NAME,
@@ -357,7 +358,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     if (!title.trim() || coverError || isSubmitting) return;
 
     setIsSubmitting(true);
-    const verified = verifiedAt !== null || (await handleUseDeviceLocation(false));
+    // Demo build: nothing leaves the browser, so anyone can try publishing from anywhere
+    const verified = isDemoMode || verifiedAt !== null || (await handleUseDeviceLocation(false));
     setIsSubmitting(false);
     if (!verified) return;
 

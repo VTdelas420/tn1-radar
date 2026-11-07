@@ -114,9 +114,10 @@ export function checkDeviceInRegion(): Promise<DeviceLocationCheck> {
             ? {
                 ok: false,
                 reason: 'denied',
-                message: 'Permita o acesso à localização para confirmar que você está no DF ou no Entorno.',
+                message:
+                  'O navegador bloqueou a localização. Toque no cadeado ao lado do endereço do site, permita a localização e tente de novo. No computador, confira também se a localização do Windows está ligada (Configurações > Privacidade > Localização).',
               }
-            : { ok: false, reason: 'unavailable', message: 'Não foi possível obter sua localização. Tente de novo.' }
+            : { ok: false, reason: 'unavailable', message: 'Não foi possível achar sua localização. Ligue a localização do aparelho (no Windows: Configurações > Privacidade > Localização) e tente de novo, de preferência pelo celular.' }
         );
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 5 * 60 * 1000 }

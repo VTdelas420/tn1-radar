@@ -1,6 +1,7 @@
 import { useAuth } from '../lib/auth';
 import { reportContent } from '../lib/persistence';
 import React, { useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import { MusicProject, ReprisedReview } from '../types/music';
 import {
   Play,
@@ -53,6 +54,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
 }) => {
   const { requireAccount, profile } = useAuth();
   const [reportOpen, setReportOpen] = useState(false);
+  useEscape(reportOpen, () => setReportOpen(false));
   const [reportReason, setReportReason] = useState('');
   const [reportState, setReportState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
@@ -71,6 +73,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
+  useEscape(showReviewModal, () => setShowReviewModal(false));
   const [reviewScore, setReviewScore] = useState(5.0);
   const [reviewText, setReviewText] = useState('');
   const [reviewerName, setReviewerName] = useState('');

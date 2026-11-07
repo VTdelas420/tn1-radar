@@ -1,3 +1,7 @@
+// Demo covers are imported so the build includes them (raw /src paths only work in dev)
+import coverBaile from '../assets/images/album_baile_saopaulo_1793848443588.jpg';
+import coverTechno from '../assets/images/album_berlin_techno_1793848443938.jpg';
+import coverGarage from '../assets/images/album_ukgarage_london_1793848444077.jpg';
 import { MusicProject, UserProfile } from '../types/music';
 
 const SOURCE_PROJECTS: MusicProject[] = [
@@ -18,7 +22,7 @@ const SOURCE_PROJECTS: MusicProject[] = [
       lat: -23.5505,
       lng: -46.6333,
     },
-    coverArt: '/src/assets/images/album_baile_saopaulo_1793848443588.jpg',
+    coverArt: coverBaile,
     accentColor: '#3b82f6',
     pricingModel: 'paid',
     priceBrl: 25.00,
@@ -152,7 +156,7 @@ const SOURCE_PROJECTS: MusicProject[] = [
       lat: -12.9777,
       lng: -38.5016,
     },
-    coverArt: '/src/assets/images/album_baile_saopaulo_1793848443588.jpg',
+    coverArt: coverBaile,
     accentColor: '#f59e0b',
     pricingModel: 'name_your_price',
     priceBrl: 15.00,
@@ -250,7 +254,7 @@ const SOURCE_PROJECTS: MusicProject[] = [
       lat: -8.0476,
       lng: -34.8770,
     },
-    coverArt: '/src/assets/images/album_ukgarage_london_1793848444077.jpg',
+    coverArt: coverGarage,
     accentColor: '#10b981',
     pricingModel: 'free',
     priceBrl: 0,
@@ -337,7 +341,7 @@ const SOURCE_PROJECTS: MusicProject[] = [
       lat: -1.4558,
       lng: -48.4902,
     },
-    coverArt: '/src/assets/images/album_berlin_techno_1793848443938.jpg',
+    coverArt: coverTechno,
     accentColor: '#a855f7',
     pricingModel: 'paid',
     priceBrl: 18.00,
@@ -424,7 +428,7 @@ const SOURCE_PROJECTS: MusicProject[] = [
       lat: -19.9167,
       lng: -43.9345,
     },
-    coverArt: '/src/assets/images/album_baile_saopaulo_1793848443588.jpg',
+    coverArt: coverBaile,
     accentColor: '#10b981',
     pricingModel: 'free',
     priceBrl: 0,

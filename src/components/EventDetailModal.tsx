@@ -5,6 +5,9 @@ import { reportContent } from '../lib/persistence';
 import { pinMarkup } from '../utils/pin';
 import { directionsUrl, eventWhen, isEventHappening, type CityEvent } from '../types/events';
 
+/** Only plain web addresses become links (never javascript: and the like). */
+const isWebLink = (url?: string): url is string => !!url && (url.startsWith('https://') || url.startsWith('http://'));
+
 interface EventDetailModalProps {
   event: CityEvent;
   onClose: () => void;
@@ -108,7 +111,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
             >
               <MapPin className="w-4 h-4 text-athos-400" /> Como chegar
             </a>
-            {event.ticketUrl ? (
+            {isWebLink(event.ticketUrl) ? (
               <a
                 href={event.ticketUrl}
                 target="_blank"

@@ -14,7 +14,10 @@ const config = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const isFirebaseEnabled = Boolean(config.apiKey && config.projectId);
+/** Demo build (npm run build:demo): no backend, everything stays in the visitor's browser. */
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+
+export const isFirebaseEnabled = !isDemoMode && Boolean(config.apiKey && config.projectId);
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;

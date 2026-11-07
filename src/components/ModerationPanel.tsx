@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import { X, EyeOff, Check, Shield } from 'lucide-react';
 import { dismissReport, hideReportedContent, listReports, type ContentReport } from '../lib/persistence';
 
 /** Admin-only list of reports: hide the content for everyone, or dismiss the report. */
 export const ModerationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  useEscape(true, onClose);
   const [reports, setReports] = useState<ContentReport[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);

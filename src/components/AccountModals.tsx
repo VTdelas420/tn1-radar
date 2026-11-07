@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import { X, Mail, Music, Headphones, MapPin } from 'lucide-react';
 import { authErrorMessage, useAuth, type AccountRole, type AuthReason } from '../lib/auth';
 import { ENTORNO_CITIES, REGION_LOCATIONS, REGION_NAME } from '../config/region';
@@ -19,7 +20,9 @@ const Shell: React.FC<{ title: string; subtitle?: string; onClose: () => void; c
   subtitle,
   onClose,
   children,
-}) => (
+}) => {
+  useEscape(true, onClose);
+  return (
   <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md">
     <div
       role="dialog"
@@ -39,7 +42,8 @@ const Shell: React.FC<{ title: string; subtitle?: string; onClose: () => void; c
       <div className="p-5">{children}</div>
     </div>
   </div>
-);
+  );
+};
 
 const LoginModal: React.FC<{ reason: AuthReason }> = ({ reason }) => {
   const { closeAuth, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword } = useAuth();

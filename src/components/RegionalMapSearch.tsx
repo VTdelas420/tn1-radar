@@ -244,7 +244,9 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   const filteredEvents = useMemo(() => {
     if (layerFilter === 'music') return [];
     const q = searchQuery.trim().toLowerCase();
+    const now = Date.now();
     return events.filter((ev) => {
+      if (ev.endsAt <= now) return false;
       if (!isInRegion(ev.coordinates.lat, ev.coordinates.lng, 15)) return false;
       if (selectedStateFilter === 'ENTORNO') {
         if ((ev.state || '').toUpperCase() !== 'GO') return false;

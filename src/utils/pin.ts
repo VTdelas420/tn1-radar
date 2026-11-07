@@ -24,8 +24,8 @@ const LIGHT: Record<PinState, [number[], number[]]> = {
 
 // The light is this many times wider than the pin
 export const LIGHT_SCALE = 2.2;
-const GRID = 16; // pixels across the light texture
-const STEPS = 7; // brightness steps, so the falloff bands like the artwork
+const GRID = 28; // pixels across the light texture (small steps still show at the edges)
+const STEPS = 12; // brightness steps, so the falloff still bands slightly like the artwork
 
 const textureCache = new Map<string, string>();
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useEscape } from '../lib/useEscape';
 import QRCode from 'qrcode';
 import { doc, getDoc } from 'firebase/firestore';
 import { X, Heart, Copy, CheckCircle2 } from 'lucide-react';
@@ -15,6 +16,7 @@ const PRESETS = [5, 10, 20, 50];
  * touches the money and cannot see whether the payment happened.
  */
 export const SupportPixModal: React.FC<{ project: MusicProject; onClose: () => void }> = ({ project, onClose }) => {
+  useEscape(true, onClose);
   const ownerUid = (project as MusicProject & { ownerUid?: string }).ownerUid;
   const suggested = project.pricingModel === 'free' ? 10 : project.minPriceBrl || project.priceBrl || 10;
   const [artist, setArtist] = useState<AccountProfile | null | undefined>(undefined);
