@@ -967,27 +967,6 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     [pinProjects, currentZoom]
   );
 
-  // Find all projects sharing the same area/cluster as the currently active pin
-  const activeClusterPeers = useMemo(() => {
-    if (!activePinProject) return [];
-    const activePos = currentSpreadMap.get(activePinProject.id);
-    return filteredProjects.filter((p) => {
-      if (
-        p.city.trim().toLowerCase() === activePinProject.city.trim().toLowerCase() &&
-        (p.state || '').toUpperCase() === (activePinProject.state || '').toUpperCase()
-      ) {
-        return true;
-      }
-      if (!activePos) return p.id === activePinProject.id;
-      const otherPos = currentSpreadMap.get(p.id);
-      if (!otherPos) return false;
-      const dist = Math.hypot(
-        otherPos.originLat - activePos.originLat,
-        otherPos.originLng - activePos.originLng
-      );
-      return dist < 0.15;
-    });
-  }, [activePinProject, filteredProjects, currentSpreadMap]);
 
   // Render Interactive Audio Release Pins on the Map (Equal Visual Weight + Multi-Ring De-stacking)
   useEffect(() => {
@@ -1546,38 +1525,6 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 </button>
               </div>
             </div>
-
-            {/* Multi-Point Area Switcher (When 2+ releases share the same city/RA, zero stacking) */}
-            {activeClusterPeers.length > 1 && (
-              <div className="mb-3 p-2 rounded-xl bg-blue-950/25 border border-sky-500/30">
-                <div className="flex items-center justify-between text-[10px] font-mono text-sky-300 mb-1.5">
-                  <span className="flex items-center gap-1">
-                    <Layers className="w-3 h-3 text-sky-400" />
-                    <span>
-                      {activeClusterPeers.length} lançamentos em {activePinProject.city} (espalhados em espiral)
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                  {activeClusterPeers.map((peer, idx) => {
-                    const isCurrent = peer.id === activePinProject.id;
-                    return (
-                      <button
-                        key={peer.id}
-                        onClick={() => flyToProjectPin(peer, Math.max(currentZoom, 8.5))}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-mono whitespace-nowrap transition-all ${
-                          isCurrent
-                            ? 'bg-sky-400 text-black font-bold shadow-[0_0_10px_rgba(56,189,248,0.5)]'
-                            : 'bg-zinc-900/90 text-sky-200 hover:bg-zinc-800 border border-sky-500/30'
-                        }`}
-                      >
-                        #{idx + 1} {peer.title}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Artwork, Title & Pure Musical / Review Info */}
             <div className="flex items-center gap-3.5">
