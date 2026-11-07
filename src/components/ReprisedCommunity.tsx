@@ -99,7 +99,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
 
         <button
           onClick={() => requireAccount('review', () => setShowWriteModal(true))}
-          className="min-h-[44px] flex items-center gap-2 px-5 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-bold text-xs sm:text-sm rounded-xl shadow-[0_0_20px_rgba(56,189,248,0.25)] transition-all active:scale-95 shrink-0"
+          className="min-h-[44px] flex items-center gap-2 px-5 py-2.5 bg-athos-600 hover:bg-athos-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all active:scale-95 shrink-0"
         >
           <MessageSquare className="w-4 h-4" />
           <span>Escrever Avaliação</span>
@@ -109,14 +109,14 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
       {/* User-Driven Navigation & Filter Bar (Zero Featured Profiles, 100% Navigation & Evaluation) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
         <div className="md:col-span-7 relative">
-          <Search className="w-4 h-4 text-sky-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-athos-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filtrar avaliações por cidade, estado, artista ou álbum..."
             aria-label="Filtrar avaliações por cidade, estado, artista ou álbum"
-            className="w-full min-h-[44px] pl-10 pr-8 py-2 text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition-colors"
+            className="w-full min-h-[44px] pl-10 pr-8 py-2 text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-athos-500 transition-colors"
           />
           {searchQuery && (
             <button
@@ -154,7 +154,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
             onClick={() => setActiveFilter('4plus')}
             className={`flex-1 min-h-[36px] px-3 text-xs font-semibold rounded-lg transition-colors ${
               activeFilter === '4plus'
-                ? 'bg-zinc-800 text-sky-300'
+                ? 'bg-zinc-800 text-athos-300'
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -182,12 +182,12 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                     onClick={() => authorProfile && onOpenUserProfile(authorProfile)}
                     className="flex items-center gap-2.5 min-w-0 text-left group"
                   >
-                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200 shrink-0 group-hover:border-sky-400 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200 shrink-0 group-hover:border-athos-400 transition-colors">
                       {review.userName[0]}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <span className="font-semibold text-white group-hover:text-sky-300 truncate transition-colors">
+                        <span className="font-semibold text-white group-hover:text-athos-300 truncate transition-colors">
                           {review.userName}
                         </span>
                       </div>
@@ -195,7 +195,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                     </div>
                   </button>
 
-                  <div className="flex items-center gap-1 text-amber-400 font-mono font-bold text-xs tabular-nums shrink-0">
+                  <div className="flex items-center gap-1 text-amber-400 font-bold text-xs tabular-nums shrink-0">
                     <Star className="w-3.5 h-3.5 fill-current" />
                     <span>{review.rating.toFixed(1)}</span>
                   </div>
@@ -213,7 +213,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <button
                       onClick={() => onPlayProject(project)}
-                      className="min-w-[40px] min-h-[40px] rounded-xl bg-zinc-900 hover:bg-sky-400 text-zinc-200 hover:text-black flex items-center justify-center transition-colors shrink-0"
+                      className="min-w-[40px] min-h-[40px] rounded-xl bg-zinc-900 hover:bg-athos-600 text-zinc-200 hover:text-white flex items-center justify-center transition-colors shrink-0"
                       aria-label={`Ouvir ${project.title}`}
                     >
                       <Play className="w-4 h-4 fill-current translate-x-0.5" />
@@ -222,7 +222,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                       onClick={() => onSelectProject(project)}
                       className="min-w-0 text-left group"
                     >
-                      <div className="text-xs font-semibold text-white group-hover:text-sky-400 truncate transition-colors">
+                      <div className="text-xs font-semibold text-white group-hover:text-athos-400 truncate transition-colors">
                         {project.title}
                       </div>
                       <div className="text-[11px] text-zinc-500 truncate">
@@ -235,8 +235,8 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                 )}
 
                 {project && (
-                  <span className="flex items-center gap-1 text-xs font-mono text-zinc-400 shrink-0">
-                    <MapPin className="w-3 h-3 text-sky-400" />
+                  <span className="flex items-center gap-1 text-xs text-zinc-400 shrink-0">
+                    <MapPin className="w-3 h-3 text-athos-400" />
                     <span>
                       {project.city}, {project.state}
                     </span>
@@ -273,7 +273,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                 <select
                   value={selectedProjectId}
                   onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
+                  className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-athos-500"
                 >
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -304,7 +304,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                       />
                     </button>
                   ))}
-                  <span className="text-sm font-mono font-bold text-amber-400 ml-2">
+                  <span className="text-sm font-bold text-amber-400 ml-2">
                     {newRating.toFixed(1)}
                   </span>
                 </div>
@@ -324,7 +324,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                   value={newReviewText}
                   onChange={(e) => setNewReviewText(e.target.value)}
                   placeholder="O que mais chamou sua atenção na produção e nas faixas?"
-                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500 leading-relaxed"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-athos-500 leading-relaxed"
                 />
               </div>
 
@@ -338,7 +338,7 @@ export const ReprisedCommunity: React.FC<ReprisedCommunityProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="min-h-[44px] px-5 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-bold text-xs sm:text-sm rounded-xl transition-colors"
+                  className="min-h-[44px] px-5 py-2.5 bg-athos-600 hover:bg-athos-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors"
                 >
                   Publicar Avaliação
                 </button>

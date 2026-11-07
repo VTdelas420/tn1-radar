@@ -35,7 +35,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-zinc-400" />
-            <h3 className="text-xs font-mono uppercase tracking-wider text-white">
+            <h3 className="text-xs text-white">
               Perfil do Ouvinte // Reprised.App
             </h3>
           </div>
@@ -57,9 +57,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
             <div className="min-w-0 flex-1">
               <h2 className="text-xl font-bold text-white truncate">{profile.name}</h2>
-              <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 mt-0.5">
+              <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
                 <span>{profile.handle}</span>
-                <span aria-hidden="true">·</span>
                 <span className="flex items-center gap-1 text-zinc-300">
                   <MapPin className="w-3 h-3 text-zinc-500" />
                   {profile.city}, {profile.state}
@@ -71,7 +70,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
           {/* Favorite Genres */}
           <div className="space-y-2">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 block">
+            <span className="text-xs text-zinc-400 block">
               Gêneros Favoritos
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -88,7 +87,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
           {/* User's Reviews and Ratings */}
           <div className="space-y-3 pt-3 border-t border-zinc-900">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 block">
+            <span className="text-xs text-zinc-400 block">
               Diário de Audições Recentes ({profile.recentReviews.length})
             </span>
 
@@ -105,18 +104,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         <span className="text-xs font-bold text-white">{rev.projectTitle}</span>
                         <div className="flex items-center text-amber-400 text-xs">
                           <Star className="w-3 h-3 fill-current" />
-                          <span className="ml-1 font-mono font-bold">{rev.rating.toFixed(1)}</span>
+                          <span className="ml-1 font-bold">{rev.rating.toFixed(1)}</span>
                         </div>
                       </div>
-                      <span className="text-[10px] text-zinc-500 font-mono">{rev.date}</span>
+                      <span className="text-[10px] text-zinc-500">{rev.date}</span>
                     </div>
 
                     <p className="text-xs text-zinc-300 italic">"{rev.reviewText}"</p>
 
                     {proj && (
                       <div className="flex items-center justify-between pt-2">
-                        <span className="text-[11px] font-mono text-zinc-500">
-                          {proj.city} · {proj.genre}
+                        <span className="text-[11px] text-zinc-500">
+                          {proj.genre} em {proj.city}
                         </span>
                         <button
                           onClick={() => {

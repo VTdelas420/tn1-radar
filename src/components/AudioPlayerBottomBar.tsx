@@ -69,7 +69,7 @@ export const AudioPlayerBottomBar: React.FC<AudioPlayerBottomBarProps> = ({
         <div className="w-full h-1 group-hover:h-1.5 bg-zinc-900 transition-all">
           <div
             style={{ width: `${progressPercent}%` }}
-            className="h-full bg-sky-400 relative transition-all duration-75"
+            className="h-full bg-athos-400 relative transition-all duration-75"
           >
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 shadow-md transition-opacity" />
           </div>
@@ -95,13 +95,12 @@ export const AudioPlayerBottomBar: React.FC<AudioPlayerBottomBarProps> = ({
           <div className="min-w-0">
             <button
               onClick={() => onOpenProjectDetail(currentProject)}
-              className="text-sm font-semibold text-white hover:text-sky-400 truncate block text-left transition-colors"
+              className="text-sm font-semibold text-white hover:text-athos-400 truncate block text-left transition-colors"
             >
               {currentTrack?.title || currentProject.title}
             </button>
             <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
               <span className="truncate">{currentProject.artistName}</span>
-              <span aria-hidden="true">·</span>
               <span className="text-zinc-500 truncate">{currentProject.city}</span>
             </div>
           </div>
@@ -140,7 +139,7 @@ export const AudioPlayerBottomBar: React.FC<AudioPlayerBottomBarProps> = ({
 
         {/* Right: Time & Volume */}
         <div className="hidden sm:flex items-center justify-end gap-4 flex-1 max-w-xs">
-          <div className="text-xs font-mono text-zinc-400 tabular-nums">
+          <div className="text-xs text-zinc-400 tabular-nums">
             <span>{formatTime(currentTime)}</span>
             <span className="mx-1 text-zinc-600">/</span>
             <span>{formatTime(duration)}</span>
@@ -162,7 +161,7 @@ export const AudioPlayerBottomBar: React.FC<AudioPlayerBottomBarProps> = ({
               value={volume}
               onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
               aria-label="Volume geral"
-              className="w-20 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-sky-400"
+              className="w-20 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-athos-400"
             />
           </div>
         </div>

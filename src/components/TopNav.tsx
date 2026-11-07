@@ -23,7 +23,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         {/* Zone 1: Brand Wordmark (Single text element, Top Bar Contract) */}
         <button
           onClick={() => setActiveTab('map')}
-          className="text-base sm:text-lg font-extrabold tracking-tight text-white hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 min-h-[44px] flex items-center focus:outline-none"
+          className="text-base sm:text-lg font-extrabold tracking-tight text-white hover:text-athos-400 transition-colors whitespace-nowrap shrink-0 min-h-[44px] flex items-center focus:outline-none"
           aria-label="Ir para o mapa principal"
         >
           TN1 Radar
@@ -39,11 +39,11 @@ export const TopNav: React.FC<TopNavProps> = ({
             aria-label="Mapa"
             className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'map'
-                ? 'border-sky-400 text-white font-semibold'
+                ? 'border-athos-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
-            <MapPin className="w-4 h-4 text-sky-400" />
+            <MapPin className="w-4 h-4 text-athos-400" />
             <span className="hidden sm:inline">Mapa Principal</span>
           </button>
 
@@ -52,7 +52,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             aria-label="Avaliações"
             className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'reprised'
-                ? 'border-sky-400 text-white font-semibold'
+                ? 'border-athos-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
@@ -65,7 +65,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             aria-label="Perfil"
             className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'profile'
-                ? 'border-sky-400 text-white font-semibold'
+                ? 'border-athos-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
@@ -94,7 +94,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                 aria-label="Minha conta"
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
-                <span className="w-9 h-9 rounded-full bg-sky-500/20 border border-sky-400/60 text-sky-200 text-sm font-bold flex items-center justify-center">
+                <span className="w-9 h-9 rounded-full bg-athos-500/20 border border-athos-400/60 text-athos-200 text-sm font-bold flex items-center justify-center">
                   {(profile?.name || user.email || '?').charAt(0).toUpperCase()}
                 </span>
               </button>
@@ -107,7 +107,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                   <div className="px-3 py-2 border-b border-zinc-800 mb-1">
                     <p className="text-sm font-semibold text-white truncate">{profile?.name ?? 'Sem perfil'}</p>
                     <p className="text-xs text-zinc-400 truncate">
-                      {profile ? `@${profile.handle} · ${profile.role === 'artist' ? 'Artista' : 'Ouvinte'}` : user.email}
+                      {profile ? `@${profile.handle}, ${profile.role === 'artist' ? 'artista' : 'ouvinte'}` : user.email}
                     </p>
                   </div>
                   <button
@@ -148,7 +148,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           )}
           <button
             onClick={onOpenNewProject}
-            className="min-h-[44px] min-w-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-black bg-sky-400 hover:bg-sky-300 rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95 flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="min-h-[44px] min-w-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-white bg-athos-600 hover:bg-athos-500 rounded-xl transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap shrink-0"
             aria-label="Publicar novo projeto"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />

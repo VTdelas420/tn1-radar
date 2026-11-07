@@ -100,7 +100,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-zinc-800">
         <div>
-          <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono mb-1">
+          <div className="flex items-center gap-2 text-xs text-zinc-400 mb-1">
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             <span>PAINEL DE DESEMPENHO BRASILEIRO // MONETIZAÇÃO TRANSPARENTE</span>
           </div>
@@ -113,8 +113,8 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
 
         <div className="text-right">
-          <span className="text-[11px] font-mono uppercase text-zinc-400 block">Saldo Disponível</span>
-          <span className="text-2xl font-extrabold font-mono text-emerald-400">
+          <span className="text-[11px] text-zinc-400 block">Saldo Disponível</span>
+          <span className="text-2xl font-extrabold text-emerald-400">
             {formatBrl(artistBalanceBrl)}
           </span>
         </div>
@@ -124,11 +124,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Net Artist Revenue */}
         <div className="p-5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>SEU LUCRO LÍQUIDO (90%)</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-white">
+          <div className="text-2xl font-bold tabular-nums text-white">
             {formatBrl(totalNetArtist)}
           </div>
           <p className="text-[11px] text-zinc-400">
@@ -138,11 +138,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Total Streams */}
         <div className="p-5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>STREAMS TOTAIS</span>
-            <Activity className="w-4 h-4 text-sky-400" />
+            <Activity className="w-4 h-4 text-athos-400" />
           </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-white">
+          <div className="text-2xl font-bold tabular-nums text-white">
             {totalStreams.toLocaleString('pt-BR')}
           </div>
           <p className="text-[11px] text-zinc-400">
@@ -152,11 +152,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Supporters Count */}
         <div className="p-5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>APOIADORES & COMPRADORES</span>
             <TrendingUp className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-white">
+          <div className="text-2xl font-bold tabular-nums text-white">
             {totalSupporters.toLocaleString('pt-BR')}
           </div>
           <p className="text-[11px] text-zinc-400">
@@ -166,11 +166,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Community Reviews */}
         <div className="p-5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>AVALIAÇÕES REPRISED</span>
             <Sparkles className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="text-2xl font-bold font-mono tabular-nums text-amber-400">
+          <div className="text-2xl font-bold tabular-nums text-amber-400">
             4.8 ★
           </div>
           <p className="text-[11px] text-zinc-400">
@@ -183,7 +183,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="p-6 md:p-8 bg-zinc-950 border border-zinc-800 rounded-2xl space-y-6 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
           <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-1">
+            <div className="flex items-center gap-2 text-xs text-emerald-400 mb-1">
               <Sparkles className="w-3.5 h-3.5" />
               <span>SAQUE IMEDIATO BRASIL // SEM INTERMEDIÁRIOS</span>
             </div>
@@ -195,7 +195,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 font-mono text-xs text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
+          <div className="flex items-center gap-2 text-xs text-zinc-400 bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
             <span>Taxa de saque:</span>
             <span className="text-emerald-400 font-bold">R$ 0,00 (Gratuito)</span>
           </div>
@@ -218,7 +218,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <div>
               <p className="text-xs font-medium">{feedback.message}</p>
               {feedback.txHash && (
-                <p className="text-[11px] font-mono text-zinc-400 mt-1">
+                <p className="text-[11px] text-zinc-400 mt-1">
                   Identificador Pix E2E: <span className="text-zinc-200">{feedback.txHash}</span>
                 </p>
               )}
@@ -229,7 +229,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <form onSubmit={handleWithdraw} className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Rail Selector */}
           <div className="md:col-span-5 space-y-2">
-            <label className="text-xs font-mono text-zinc-400 block">
+            <label className="text-xs text-zinc-400 block">
               MÉTODO DE RECEBIMENTO BRASILEIRO
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -248,7 +248,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <QrCode className="w-5 h-5 text-emerald-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold">Pix Instantâneo (Recomendado)</div>
-                  <div className="text-[10px] text-zinc-500 font-mono">Cai em 2 segundos na sua conta</div>
+                  <div className="text-[10px] text-zinc-500">Cai em 2 segundos na sua conta</div>
                 </div>
               </button>
 
@@ -267,7 +267,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <Building className="w-5 h-5 text-amber-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold">Transferência Bancária (TED)</div>
-                  <div className="text-[10px] text-zinc-500 font-mono">Nubank, Itaú, Bradesco, Inter, BB, Caixa</div>
+                  <div className="text-[10px] text-zinc-500">Nubank, Itaú, Bradesco, Inter, BB, Caixa</div>
                 </div>
               </button>
 
@@ -286,7 +286,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <Smartphone className="w-5 h-5 text-purple-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold">PicPay / Carteira Digital</div>
-                  <div className="text-[10px] text-zinc-500 font-mono">Crédito direto no seu @usuário</div>
+                  <div className="text-[10px] text-zinc-500">Crédito direto no seu @usuário</div>
                 </div>
               </button>
             </div>
@@ -295,7 +295,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           {/* Amount & Destination Input */}
           <div className="md:col-span-7 space-y-4">
             <div>
-              <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-1.5">
+              <div className="flex items-center justify-between text-xs text-zinc-400 mb-1.5">
                 <label>VALOR DO RESGATE (BRL)</label>
                 <button
                   type="button"
@@ -306,7 +306,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 </button>
               </div>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">
                   R$
                 </span>
                 <input
@@ -317,13 +317,13 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   value={payoutAmount || ''}
                   onChange={(e) => setPayoutAmount(parseFloat(e.target.value) || 0)}
                   placeholder="0.00"
-                  className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-zinc-500"
+                  className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-zinc-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-mono text-zinc-400 block mb-1.5">
+              <label className="text-xs text-zinc-400 block mb-1.5">
                 {payoutMethod === 'pix'
                   ? 'CHAVE PIX (CPF, CNPJ, E-MAIL, CELULAR OU ALEATÓRIA)'
                   : payoutMethod === 'ted_banco'
@@ -335,7 +335,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Insira os dados..."
-                className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-zinc-500"
+                className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-zinc-500"
               />
             </div>
 
@@ -361,19 +361,18 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Payout History Ledger */}
         <div className="pt-6 border-t border-zinc-800 space-y-3">
-          <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>HISTÓRICO DE SAQUES PROCESSADOS</span>
             <span>{payoutHistory.length} saques liquidados</span>
           </div>
 
           <div className="divide-y divide-zinc-900 overflow-x-auto">
             {payoutHistory.map((item) => (
-              <div key={item.id} className="py-2.5 flex items-center justify-between text-xs font-mono">
+              <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span className="text-zinc-200 font-bold">{formatBrl(item.amount)}</span>
-                  <span className="text-zinc-500">·</span>
-                  <span className="text-zinc-400 uppercase">{item.method}</span>
+                  <span className="text-zinc-400">{item.method}</span>
                   <span className="text-zinc-500 hidden sm:inline">({item.destination})</span>
                 </div>
                 <div className="flex items-center gap-4 text-zinc-500 text-[11px]">

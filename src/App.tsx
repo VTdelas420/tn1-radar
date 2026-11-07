@@ -490,7 +490,7 @@ export default function App() {
               </p>
               <button
                 onClick={() => (account.user ? account.openProfileSetup(false) : account.openAuth('generic'))}
-                className="min-h-[44px] px-6 rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm"
+                className="min-h-[44px] px-6 rounded-xl bg-athos-600 hover:bg-athos-500 text-white font-bold text-sm"
               >
                 {account.user ? 'Criar meu perfil' : 'Entrar ou criar conta'}
               </button>
@@ -560,10 +560,10 @@ export default function App() {
       {syncStatus && (
         <div
           role="status"
-          className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100%-2rem)] px-4 py-2.5 rounded-lg border text-sm font-mono shadow-xl flex items-center gap-3 ${
+          className={`fixed bottom-28 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100%-2rem)] px-4 py-2.5 rounded-lg border text-sm shadow-xl flex items-center gap-3 ${
             syncStatus.kind === 'error'
               ? 'bg-red-950/90 border-red-500/50 text-red-200'
-              : 'bg-black/90 border-sky-400/50 text-sky-200'
+              : 'bg-black/90 border-athos-400/50 text-athos-200'
           }`}
         >
           <span>{syncStatus.message}</span>

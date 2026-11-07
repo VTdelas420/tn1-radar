@@ -24,6 +24,7 @@ import {
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
+import { azulejoSvg } from '../utils/azulejo';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import {
   REGION_BOUNDS,
@@ -809,8 +810,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
         const stateLabelHtml = `
           <div class="pointer-events-none select-none flex flex-col items-center justify-center text-center">
-            <span class="text-[10px] font-mono font-bold tracking-widest drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)] ${
-              currentZoom >= 6 ? 'text-sky-300/90 text-xs' : 'text-sky-400/75'
+            <span class="text-[10px] font-bold drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)] ${
+              currentZoom >= 6 ? 'text-athos-300/90 text-xs' : 'text-athos-400/75'
             }">
               ${currentZoom >= 6 ? st.name.toUpperCase() : st.sigla}
             </span>
@@ -832,8 +833,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         if (currentZoom >= 5.25 && !citiesWithPins.has(st.capital.toLowerCase())) {
           const capHtml = `
             <div class="pointer-events-none select-none flex items-center gap-1 whitespace-nowrap">
-              <div class="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_#38bdf8]"></div>
-              <span class="text-[10px] font-mono text-sky-200/85">${st.capital}</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-athos-400"></div>
+              <span class="text-[10px] text-athos-200/85">${st.capital}</span>
             </div>
           `;
           const capMarker = L.marker([st.capLat, st.capLng], {
@@ -855,8 +856,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         if (citiesWithPins.has(city.name.toLowerCase())) return;
         const cityHtml = `
           <div class="pointer-events-none select-none flex items-center gap-1 whitespace-nowrap">
-            <div class="w-1 h-1 rounded-full bg-blue-400/80"></div>
-            <span class="text-[9px] font-mono text-blue-300/75">${city.name}</span>
+            <div class="w-1 h-1 rounded-full bg-athos-400/80"></div>
+            <span class="text-[9px] text-athos-300/75">${city.name}</span>
           </div>
         `;
         const cityMarker = L.marker([city.lat, city.lng], {
@@ -896,8 +897,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
         const raHtml = `
           <div class="pointer-events-none select-none flex items-center gap-1 whitespace-nowrap">
-            <div class="w-1.5 h-1.5 rounded-full bg-cyan-400/90 shadow-[0_0_5px_#22d3ee]"></div>
-            <span class="text-[9px] font-mono text-cyan-200/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">${ra.n}</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-athos-400/90"></div>
+            <span class="text-[9px] text-athos-200/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">${ra.n}</span>
           </div>
         `;
         const raMarker = L.marker([ra.lat, ra.lng], {
@@ -928,8 +929,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           const nbHtml = `
             <div class="pointer-events-none select-none flex items-center gap-1 whitespace-nowrap">
-              <span class="text-[8px] text-cyan-400">◇</span>
-              <span class="text-[9px] font-mono font-medium text-cyan-300/95 bg-black/85 px-1.5 py-0.5 rounded border border-cyan-500/40 shadow-[0_0_8px_rgba(0,0,0,0.9)]">${nb.b}</span>
+              <span class="text-[8px] text-athos-400">◇</span>
+              <span class="text-[9px] font-medium text-athos-300/95 bg-black/85 px-1.5 py-0.5 rounded border border-athos-500/40">${nb.b}</span>
             </div>
           `;
           const nbMarker = L.marker([nb.lat, nb.lng], {
@@ -993,14 +994,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
     // Orbital density rings (same size for every place)
     densityGroups.forEach((g) => {
+      const tiles = [0, 1, 2, 3].map((i) => azulejoSvg(`${g.key}-${i}`, 'idle', 22)).join('');
       const ringHtml = `
         <div class="relative cursor-pointer" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-          <div class="absolute inset-0 rounded-full border border-sky-400/40 animate-ping"></div>
-          <div class="absolute inset-1 rounded-full border-2 border-dashed border-sky-400/80" style="animation: spin 9s linear infinite;"></div>
-          <div class="absolute inset-[14px] rounded-full border-2 border-sky-300 bg-black/80 shadow-[0_0_18px_rgba(56,189,248,0.8)]"></div>
-          <div class="relative w-2 h-2 rounded-full bg-sky-300"></div>
-          <div class="absolute left-1/2 -translate-x-1/2 -bottom-6 px-2 py-0.5 rounded-md bg-black/95 border border-sky-500/50 text-[10px] font-mono whitespace-nowrap text-sky-100 pointer-events-none">
-            ${g.name} · explorar
+          <div style="display:grid;grid-template-columns:22px 22px;gap:2px;padding:2px;background:#000">${tiles}</div>
+          <div class="absolute left-1/2 -translate-x-1/2 -bottom-6 px-1.5 py-0.5 bg-black/85 text-[12px] font-bold whitespace-nowrap text-azulejo pointer-events-none">
+            ${g.name}
           </div>
         </div>`;
       const ring = L.marker([g.lat, g.lng], {
@@ -1040,32 +1039,23 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           ? 'left-11 top-1/2 -translate-y-1/2'
           : 'left-1/2 -translate-x-1/2 -bottom-6';
 
+      const tileState = isCurrentlyPlaying ? 'playing' : isSelected ? 'selected' : 'idle';
+      // Far out, place names would pile up: show them for everyone only from zoom 10.5
+      const showLabel = isSelected || currentZoom >= 10.5;
       const html = `
-        <div class="relative group cursor-pointer" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-          <div class="absolute inset-1 rounded-full animate-ping opacity-45 ${
-            isCurrentlyPlaying ? 'bg-white' : isSelected ? 'bg-sky-400' : 'bg-blue-500'
-          }"></div>
-
-          <div class="relative w-9 h-9 rounded-full flex items-center justify-center transition-transform duration-150 ${
-            isCurrentlyPlaying
-              ? 'bg-white text-black scale-125 shadow-[0_0_20px_rgba(255,255,255,1)] ring-4 ring-white/50'
-              : isSelected
-              ? 'bg-sky-400 text-black scale-125 shadow-[0_0_25px_rgba(56,189,248,1)] ring-4 ring-sky-400/60'
-              : 'bg-black border-2 border-sky-400 text-sky-400 hover:scale-115 hover:border-white hover:text-white shadow-[0_0_15px_rgba(56,189,248,0.75)]'
+        <div class="relative cursor-pointer" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+          <div style="transform: scale(${isSelected || isCurrentlyPlaying ? 1.18 : 1}); transition: transform 150ms;${
+            isSelected ? ' box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--color-azulejo);' : ''
           }">
-            <svg class="w-4 h-4 ${isCurrentlyPlaying ? 'animate-spin' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
+            ${azulejoSvg(proj.id, tileState, 30)}
           </div>
-
-          <div class="absolute ${labelAnchorClass} px-2 py-0.5 rounded-md bg-black/95 backdrop-blur-md border border-sky-500/50 text-[10px] font-mono whitespace-nowrap shadow-xl pointer-events-none ${
-            isSelected
-              ? 'border-sky-400 text-sky-300 font-bold scale-105 shadow-[0_0_12px_rgba(56,189,248,0.5)]'
-              : 'text-sky-100'
-          }">
-            ${labelText}
-          </div>
+          ${
+            showLabel
+              ? `<div class="absolute ${labelAnchorClass} px-1.5 py-0.5 bg-black/85 text-[12px] whitespace-nowrap pointer-events-none ${
+                  isSelected ? 'font-bold text-white' : 'text-azulejo/90'
+                }">${labelText}</div>`
+              : ''
+          }
         </div>
       `;
 
@@ -1079,6 +1069,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       const marker = L.marker([pos.lat, pos.lng], {
         icon: customIcon,
         zIndexOffset: isSelected ? 1000 : 500,
+        title: `${proj.city}: ${proj.title}`,
+        keyboard: true,
       });
 
       marker.on('click', (e) => {
@@ -1174,16 +1166,16 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
   const lodLevelLabel =
     currentZoom >= 14.0
-      ? 'ARQUITETURA REAL 2.5D · PRÉDIOS & LOTES'
+      ? 'Prédios e lotes'
       : currentZoom >= 11.0
-      ? 'MALHA VIÁRIA REAL · BAIRROS & RUAS'
+      ? 'Bairros e ruas'
       : currentZoom >= 8.5
-      ? 'DIVISÕES DE BAIRROS & RODOVIAS'
+      ? 'Cidades e rodovias'
       : currentZoom >= 6.5
-      ? 'MALHA MUNICIPAL & RAs'
+      ? 'Cidades e RAs'
       : currentZoom >= 5.0
-      ? 'SETOR ESTADUAL'
-      : 'SATÉLITE NACIONAL';
+      ? 'Região'
+      : 'Brasil';
 
   return (
     <div
@@ -1194,17 +1186,17 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       }
     >
       {/* Unified Command Bar (Hick's Law: 3 Clear Controls — Search, 27 States Navigation, Access Mode) */}
-      <div className="grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 p-2 md:p-3 bg-black border border-blue-950/90 rounded-2xl items-center shrink-0">
+      <div className="grid grid-cols-2 md:grid-cols-12 gap-2 md:gap-3 p-2 md:p-3 bg-black border border-athos-950/90 rounded-2xl items-center shrink-0">
         {/* 1. Search by City, State, DF RA, Artist or Genre */}
         <div className="col-span-1 md:col-span-7 relative">
-          <Search className="w-4 h-4 text-sky-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-athos-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar RA, artista ou estilo…"
             aria-label="Buscar por cidade, estado ou som"
-            className="w-full min-h-[44px] pl-9 md:pl-10 pr-8 py-2 text-[13px] md:text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition-colors"
+            className="w-full min-h-[44px] pl-9 md:pl-10 pr-8 py-2 text-[13px] md:text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-athos-500 transition-colors"
           />
           {searchQuery && (
             <button
@@ -1223,7 +1215,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             value={selectedStateFilter}
             onChange={(e) => handleSelectStateFilter(e.target.value)}
             aria-label="Filtrar por polo regional"
-            className="w-full min-h-[44px] px-2.5 md:px-3.5 py-2 text-[13px] md:text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-sky-500 cursor-pointer"
+            className="w-full min-h-[44px] px-2.5 md:px-3.5 py-2 text-[13px] md:text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-athos-500 cursor-pointer"
           >
             <option value="all">Todo o {REGION_NAME}</option>
             <option value="DF">Distrito Federal — todas as RAs</option>
@@ -1251,7 +1243,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       <div
         className={`relative w-full ${
           isFullscreen ? 'flex-1 min-h-0' : 'h-[calc(100dvh-17.5rem)] min-h-[380px] md:h-[640px]'
-        } bg-black border border-blue-950/90 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.95)]`}
+        } bg-black border border-athos-950/90 rounded-2xl overflow-hidden`}
       >
         <div
           ref={mapContainerRef}
@@ -1265,17 +1257,17 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
           >
             <div className="relative w-12 h-12 flex items-center justify-center opacity-30">
-              <div className="absolute inset-0 border border-sky-400/50 rounded-full" />
-              <div className="w-4 h-[1px] bg-sky-400" />
-              <div className="h-4 w-[1px] bg-sky-400 absolute" />
+              <div className="absolute inset-0 border border-athos-400/50 rounded-full" />
+              <div className="w-4 h-[1px] bg-athos-400" />
+              <div className="h-4 w-[1px] bg-athos-400 absolute" />
             </div>
           </div>
         )}
 
         {/* Top-Left Tactical Sector Breadcrumb & Live Hover Telemetry */}
         <div className="absolute top-3 left-3 md:top-4 md:left-4 right-16 md:right-auto z-20 flex flex-wrap items-center gap-2">
-          <div className={`${activePinProject || activeStateSector ? 'flex' : 'hidden sm:flex'} items-center gap-2 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-blue-900/60 text-xs font-mono text-sky-300 shadow-xl`}>
-            <Compass className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+          <div className={`${activePinProject || activeStateSector ? 'flex' : 'hidden sm:flex'} items-center gap-2 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-athos-900/60 text-xs text-athos-300 shadow-xl`}>
+            <Compass className="w-3.5 h-3.5 text-athos-400 shrink-0" />
             <span>
               {activePinProject
                 ? `${activePinProject.city} (${activePinProject.state})`
@@ -1283,14 +1275,14 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 ? hoveredSectorName
                 : activeStateSector
                 ? `Setor: ${activeStateSector.name} (${activeStateSector.sigla})`
-                : `${REGION_NAME} · Dê zoom para revelar RAs, ruas, quadras e prédios 2.5D`}
+                : 'Aproxime para ver bairros, ruas e prédios'}
             </span>
           </div>
 
           {(activeStateSector || Math.abs(currentZoom - DEFAULT_ZOOM) > 1) && (
             <button
               onClick={handleResetView}
-              className="min-h-[36px] px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/50 text-xs font-mono font-semibold text-sky-300 hover:text-white transition-colors shadow-lg flex items-center gap-1.5"
+              className="min-h-[36px] px-3 py-1.5 rounded-xl bg-athos-500/15 hover:bg-athos-500/25 border border-athos-400/50 text-xs font-semibold text-athos-300 hover:text-white transition-colors shadow-lg flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span className="sm:hidden">Ver tudo</span>
@@ -1301,21 +1293,21 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
         {/* Bottom-Left Tactical Scanner Bar: Cycle Signals Geographically + Live Zoom LOD Telemetry */}
         <div className="hidden sm:flex absolute bottom-4 left-4 z-20 items-center gap-2">
-          <div className="flex items-center bg-black/90 backdrop-blur-md border border-blue-900/60 rounded-xl p-1 shadow-xl">
+          <div className="flex items-center bg-black/90 backdrop-blur-md border border-athos-900/60 rounded-xl p-1 shadow-xl">
             <button
               onClick={() => handleCycleSignal('prev')}
-              className="min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-sky-300 hover:text-white hover:bg-blue-950/60 transition-colors"
+              className="min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-athos-300 hover:text-white hover:bg-athos-950/60 transition-colors"
               title="Sinal Anterior no Mapa (Tecla [ ou Seta Esquerda)"
               aria-label="Sinal Anterior no Mapa"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <div className="px-2.5 text-[11px] font-mono text-sky-200 select-none">
+            <div className="px-2.5 text-[11px] text-athos-200 select-none">
               Explorar Sinais
             </div>
             <button
               onClick={() => handleCycleSignal('next')}
-              className="min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-sky-300 hover:text-white hover:bg-blue-950/60 transition-colors"
+              className="min-w-[38px] min-h-[38px] flex items-center justify-center rounded-lg text-athos-300 hover:text-white hover:bg-athos-950/60 transition-colors"
               title="Próximo Sinal no Mapa (Tecla ] ou Seta Direita)"
               aria-label="Próximo Sinal no Mapa"
             >
@@ -1323,10 +1315,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             </button>
           </div>
 
-          <div className="px-3 py-2 rounded-xl bg-black/85 backdrop-blur-md border border-blue-900/40 text-[11px] font-mono text-zinc-400 tabular-nums select-none">
-            <span className="text-sky-400 font-semibold">{lodLevelLabel}</span>
+          <div className="px-3 py-2 rounded-xl bg-black/85 backdrop-blur-md border border-athos-900/40 text-[11px] text-zinc-400 tabular-nums select-none">
+            <span className="text-athos-400 font-semibold">{lodLevelLabel}</span>
             <span className="mx-1.5 text-zinc-700">|</span>
-            <span className="text-sky-200/80">Z:{currentZoom.toFixed(1)}x</span>
+            <span className="text-athos-200/80">Z:{currentZoom.toFixed(1)}x</span>
             <span className="mx-1.5 text-zinc-700">|</span>
             <span>
               {cursorCoords.lat.toFixed(3)}°, {cursorCoords.lng.toFixed(3)}°
@@ -1336,10 +1328,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
         {/* Right Ergonomic Map Controls (Fitts's Law: >= 44x44px Touch Targets) */}
         <div className="absolute top-3 right-3 md:top-4 md:right-4 z-20 flex flex-col gap-2">
-          <div className="bg-black/90 backdrop-blur-md border border-blue-900/50 rounded-xl overflow-hidden shadow-xl flex flex-col">
+          <div className="bg-black/90 backdrop-blur-md border border-athos-900/50 rounded-xl overflow-hidden shadow-xl flex flex-col">
             <button
               onClick={handleZoomIn}
-              className="min-w-[44px] min-h-[44px] hover:bg-blue-950/60 text-sky-300 hover:text-white transition-colors border-b border-blue-900/40 flex items-center justify-center"
+              className="min-w-[44px] min-h-[44px] hover:bg-athos-950/60 text-athos-300 hover:text-white transition-colors border-b border-athos-900/40 flex items-center justify-center"
               title="Aproximar Zoom (Revelar Ruas e Prédios)"
               aria-label="Aproximar Zoom"
             >
@@ -1347,7 +1339,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             </button>
             <button
               onClick={handleZoomOut}
-              className="min-w-[44px] min-h-[44px] hover:bg-blue-950/60 text-sky-300 hover:text-white transition-colors flex items-center justify-center"
+              className="min-w-[44px] min-h-[44px] hover:bg-athos-950/60 text-athos-300 hover:text-white transition-colors flex items-center justify-center"
               title="Afastar Zoom"
               aria-label="Afastar Zoom"
             >
@@ -1357,10 +1349,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           <button
             onClick={handleToggleUrbanStreetZoom}
-            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
+            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-athos-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
               currentZoom >= 13.5
-                ? 'border-sky-400 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.45)]'
-                : 'border-blue-900/50 text-sky-400 hover:text-white'
+                ? 'border-athos-400 text-athos-300'
+                : 'border-athos-900/50 text-athos-400 hover:text-white'
             }`}
             title={
               currentZoom >= 13.5
@@ -1374,7 +1366,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           <button
             onClick={handleResetView}
-            className="min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border border-blue-900/50 rounded-xl text-sky-400 hover:text-white shadow-xl transition-all flex items-center justify-center"
+            className="min-w-[44px] min-h-[44px] bg-black/90 hover:bg-athos-950/60 backdrop-blur-md border border-athos-900/50 rounded-xl text-athos-400 hover:text-white shadow-xl transition-all flex items-center justify-center"
             title="Recentrar no DF + Entorno (ESC)"
             aria-label="Recentrar Visão Geral do Brasil"
           >
@@ -1383,10 +1375,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           <button
             onClick={() => setShowCitiesMesh(!showCitiesMesh)}
-            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
+            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-athos-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
               showCitiesMesh
-                ? 'border-sky-500/60 text-sky-400'
-                : 'border-blue-900/40 text-zinc-500'
+                ? 'border-athos-500/60 text-athos-400'
+                : 'border-athos-900/40 text-zinc-500'
             }`}
             title={showCitiesMesh ? 'Ocultar Malha de Municípios' : 'Mostrar Malha de Municípios'}
             aria-label="Alternar Malha de Municípios"
@@ -1396,10 +1388,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           <button
             onClick={() => setShowReticle(!showReticle)}
-            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
+            className={`hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-athos-950/60 backdrop-blur-md border rounded-xl shadow-xl transition-all items-center justify-center ${
               showReticle
-                ? 'border-sky-500/60 text-sky-400'
-                : 'border-blue-900/40 text-zinc-500'
+                ? 'border-athos-500/60 text-athos-400'
+                : 'border-athos-900/40 text-zinc-500'
             }`}
             title={showReticle ? 'Ocultar Mira Central' : 'Mostrar Mira Central'}
             aria-label="Alternar Mira Tática"
@@ -1409,7 +1401,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border border-blue-900/50 rounded-xl text-sky-400 hover:text-white shadow-xl transition-all items-center justify-center"
+            className="hidden sm:flex min-w-[44px] min-h-[44px] bg-black/90 hover:bg-athos-950/60 backdrop-blur-md border border-athos-900/50 rounded-xl text-athos-400 hover:text-white shadow-xl transition-all items-center justify-center"
             title={isFullscreen ? 'Sair da Tela Cheia' : 'Expandir Mapa em Tela Cheia'}
             aria-label="Alternar Tela Cheia do Mapa"
           >
@@ -1421,17 +1413,16 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         {activePinProject && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2 left-2 right-2 md:bottom-4 md:left-auto md:right-4 md:w-[430px] bg-black/95 backdrop-blur-xl border border-sky-500/60 p-3 md:p-4 rounded-2xl shadow-[0_0_35px_rgba(56,189,248,0.28)] z-30 animate-in slide-in-from-bottom-3 duration-200"
+            className="absolute bottom-2 left-2 right-2 md:bottom-4 md:left-auto md:right-4 md:w-[430px] bg-black/95 backdrop-blur-xl border border-athos-500/60 p-3 md:p-4 rounded-2xl z-30 animate-in slide-in-from-bottom-3 duration-200"
           >
             {/* Unboxed Metadata Header + Urban Zoom & Prev/Next Signal Switcher */}
             <div className="flex items-center justify-between gap-2 pb-2 md:pb-2.5 mb-2.5 md:mb-3 border-b border-zinc-800/80">
               <div className="flex flex-1 min-w-0 items-center gap-1.5 text-xs text-zinc-400">
-                <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-athos-400 shrink-0" />
                 <span className="text-zinc-100 font-semibold truncate">
                   {activePinProject.city}, {activePinProject.state || activePinProject.country}
                 </span>
-                <span aria-hidden="true" className="hidden sm:inline">·</span>
-                <span className="hidden sm:inline truncate text-sky-300">{activePinProject.genre}</span>
+                <span className="hidden sm:inline truncate text-athos-300">{activePinProject.genre}</span>
               </div>
 
               <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
@@ -1439,7 +1430,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                   onClick={() =>
                     flyToProjectPin(activePinProject, currentZoom >= 14 ? 9.5 : 16)
                   }
-                  className="min-w-[36px] sm:min-w-0 px-2 min-h-[36px] sm:min-h-[28px] flex items-center justify-center gap-1 text-[10px] font-mono font-semibold text-sky-300 bg-sky-500/10 hover:bg-sky-500/25 border border-sky-500/40 rounded-lg transition-colors whitespace-nowrap"
+                  className="min-w-[36px] sm:min-w-0 px-2 min-h-[36px] sm:min-h-[28px] flex items-center justify-center gap-1 text-[10px] font-semibold text-athos-300 bg-athos-500/10 hover:bg-athos-500/25 border border-athos-500/40 rounded-lg transition-colors whitespace-nowrap"
                   title="Aproximar para ver Ruas Reais, Bairros e Arquitetura 2.5D ao redor deste lançamento"
                   aria-label={currentZoom >= 14 ? 'Visão Bairros' : 'Ruas & Prédios'}
                 >
@@ -1448,7 +1439,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 </button>
                 <button
                   onClick={() => handleCycleSignal('prev')}
-                  className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-sky-300 rounded-lg hover:bg-zinc-900 transition-colors"
+                  className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-athos-300 rounded-lg hover:bg-zinc-900 transition-colors"
                   title="Sinal Anterior"
                   aria-label="Sinal Anterior"
                 >
@@ -1456,7 +1447,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 </button>
                 <button
                   onClick={() => handleCycleSignal('next')}
-                  className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-sky-300 rounded-lg hover:bg-zinc-900 transition-colors"
+                  className="min-w-[32px] min-h-[32px] flex items-center justify-center text-zinc-400 hover:text-athos-300 rounded-lg hover:bg-zinc-900 transition-colors"
                   title="Próximo Sinal"
                   aria-label="Próximo Sinal"
                 >
@@ -1487,7 +1478,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               <div className="flex-1 min-w-0">
                 <h4
                   onClick={() => onSelectProject(activePinProject)}
-                  className="text-base font-bold text-white hover:text-sky-300 transition-colors truncate cursor-pointer"
+                  className="text-base font-bold text-white hover:text-athos-300 transition-colors truncate cursor-pointer"
                 >
                   {activePinProject.title}
                 </h4>
@@ -1502,14 +1493,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                     <Star className="w-3.5 h-3.5 fill-current" />
                     {activePinProject.stats.averageRating.toFixed(1)}
                   </span>
-                  <span aria-hidden="true" className="text-zinc-600">·</span>
                   <span className="text-zinc-400">
                     {activePinProject.tracks.length}{' '}
                     {activePinProject.tracks.length === 1 ? 'faixa' : 'faixas'}
                   </span>
-                  <span aria-hidden="true" className="text-zinc-600">·</span>
-                  <span className="text-sky-400 font-bold font-mono whitespace-nowrap">
-                    Livre · apoie no Pix
+                  <span className="text-athos-400 font-bold whitespace-nowrap">
+                    Livre para ouvir
                   </span>
                 </div>
               </div>
@@ -1523,23 +1512,22 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               >
                 {currentProjectId === activePinProject.id && isPlaying ? (
                   <>
-                    <Pause className="w-4 h-4 text-sky-400" />
+                    <Pause className="w-4 h-4 text-athos-400" />
                     <span>Pausar</span>
                   </>
                 ) : (
                   <>
-                    <Play className="w-4 h-4 fill-current text-sky-400" />
-                    <span>Ouvir Master</span>
+                    <Play className="w-4 h-4 fill-current text-athos-400" />
+                    <span>Ouvir</span>
                   </>
                 )}
               </button>
 
               <button
                 onClick={() => onSelectProject(activePinProject)}
-                className="min-h-[44px] flex items-center justify-center gap-2 px-3 bg-sky-400 hover:bg-sky-300 text-black text-xs font-bold rounded-xl transition-colors active:scale-95 shadow-[0_0_15px_rgba(56,189,248,0.35)]"
+                className="min-h-[44px] flex items-center justify-center gap-2 px-3 bg-athos-600 hover:bg-athos-500 text-white text-xs font-bold rounded-xl transition-colors active:scale-95"
               >
-                <span>Página do Projeto</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Ver lançamento</span>
               </button>
             </div>
           </div>

@@ -2,19 +2,59 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * TN1 Radar "Azulejo de Brasília": the blue and white of Athos Bulcão's tiles,
+ * Niemeyer's concrete, the ipê and the cerrado earth. Helvetica, as on the
+ * city's road signs (Arial where the device has no Helvetica).
+ */
+@theme {
+  --font-sans: "Helvetica Neue", Helvetica, Arial, "Nimbus Sans", sans-serif;
+
+  --color-athos-50: #eef3ff;
+  --color-athos-100: #dce6ff;
+  --color-athos-200: #bcceff;
+  --color-athos-300: #93afff;
+  --color-athos-400: #6b8df5;
+  --color-athos-500: #3e6ae6;
+  --color-athos-600: #1f4fd8;
+  --color-athos-700: #1a3fae;
+  --color-athos-800: #172f7f;
+  --color-athos-900: #13234f;
+  --color-athos-950: #0a1430;
+
+  --color-azulejo: #f2f5fa;
+  --color-concreto: #8a929e;
+  --color-ipe: #f2b705;
+  --color-terra: #9c3d1e;
+}
+
 @layer base {
   body {
-    background-color: #0c0d0e;
-    color: #e4e4e7;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000000;
+    color: var(--color-azulejo);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 }
 
-/* Custom sleek waveform bars & audio sliders */
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-athos-300);
+  outline-offset: 2px;
+}
+
 input[type="range"] {
-  accent-color: #f4f4f5;
+  accent-color: var(--color-athos-400);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -22,7 +62,7 @@ input[type="range"] {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #090a0b;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
   background: #27272a;
@@ -32,7 +72,7 @@ input[type="range"] {
   background: #3f3f46;
 }
 
-/* Leaflet Interactive Vector Map Custom Styling (Pure Black + Electric Blue) */
+/* Map */
 .leaflet-container {
   background-color: #000000 !important;
   font-family: inherit !important;
@@ -47,16 +87,15 @@ input[type="range"] {
 }
 
 .leaflet-tooltip.substream-city-tooltip {
-  background: rgba(2, 6, 23, 0.95) !important;
-  border: 1px solid rgba(56, 189, 248, 0.75) !important;
-  color: #f0f9ff !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.04em !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid var(--color-athos-700) !important;
+  color: var(--color-azulejo) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
   padding: 3px 8px !important;
-  border-radius: 6px !important;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.45) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
   pointer-events: none !important;
 }
 
@@ -64,19 +103,8 @@ input[type="range"] {
   display: none !important;
 }
 
-.leaflet-control-attribution {
-  background: rgba(0, 0, 0, 0.9) !important;
-  color: #3b82f6 !important;
-  font-size: 9px !important;
-  border-top-left-radius: 6px;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  backdrop-filter: blur(8px);
-}
-.leaflet-control-attribution a {
-  color: #60a5fa !important;
-}
 
-/* Watch Dogs ctOS / GTA Tactical Electric-Blue Street & Building Tile Filter on Pure Black */
+/* Raster fallback tiles (no WebGL): recolour OSM to black and blue */
 .leaflet-tile-pane .substream-electric-blue-tiles {
   filter: sepia(100%) hue-rotate(185deg) saturate(600%) contrast(210%) brightness(95%);
   mix-blend-mode: screen;
@@ -86,9 +114,9 @@ input[type="range"] {
 /* Map credits (OpenStreetMap / IBGE), styled for the dark map */
 .leaflet-container .leaflet-control-attribution {
   background: rgba(0, 0, 0, 0.7);
-  color: #64748b;
-  font-size: 9px;
+  color: var(--color-concreto);
+  font-size: 10px;
 }
 .leaflet-container .leaflet-control-attribution a {
-  color: #7dd3fc;
+  color: var(--color-athos-300);
 }

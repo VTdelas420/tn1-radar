@@ -79,7 +79,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   >({ kind: 'idle' });
   const [verifiedAt, setVerifiedAt] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [accentColor] = useState('#38bdf8');
+  const [accentColor] = useState('#1f4fd8');
   const [description, setDescription] = useState('');
   const [linerNotes, setLinerNotes] = useState('');
 
@@ -456,11 +456,11 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
           {/* Zeigarnik Effect Progress Bar */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs font-mono tabular-nums">
+            <div className="flex items-center justify-between text-xs tabular-nums">
               <span className="text-zinc-400">
                 Etapas concluídas: {completionStats.completedSteps} de {completionStats.totalSteps}
               </span>
-              <span className={completionStats.isReady ? 'text-emerald-400 font-bold' : 'text-sky-400'}>
+              <span className={completionStats.isReady ? 'text-emerald-400 font-bold' : 'text-athos-400'}>
                 {completionStats.percent}% pronto
               </span>
             </div>
@@ -468,7 +468,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               <div
                 style={{ width: `${completionStats.percent}%` }}
                 className={`h-full transition-all duration-300 ${
-                  completionStats.isReady ? 'bg-emerald-400' : 'bg-sky-400'
+                  completionStats.isReady ? 'bg-emerald-400' : 'bg-athos-400'
                 }`}
               />
             </div>
@@ -491,9 +491,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                     htmlFor="cover-art-upload"
                     className="cursor-pointer absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 text-center"
                   >
-                    <ImageIcon className="w-6 h-6 text-sky-400 mb-1" />
+                    <ImageIcon className="w-6 h-6 text-athos-400 mb-1" />
                     <span className="text-xs font-semibold text-white">Trocar Capa</span>
-                    <span className="text-[10px] font-mono text-zinc-300 mt-0.5">
+                    <span className="text-[10px] text-zinc-300 mt-0.5">
                       Máx. {MAX_COVER_DIMENSION_PX}×{MAX_COVER_DIMENSION_PX} px
                     </span>
                   </label>
@@ -510,17 +510,17 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
 
                 <label
                   htmlFor="cover-art-upload"
-                  className="min-h-[44px] cursor-pointer flex items-center justify-center gap-2 w-full px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-sky-500/60 rounded-xl text-xs font-semibold text-zinc-100 transition-all"
+                  className="min-h-[44px] cursor-pointer flex items-center justify-center gap-2 w-full px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-athos-500/60 rounded-xl text-xs font-semibold text-zinc-100 transition-all"
                 >
-                  <Upload className="w-4 h-4 text-sky-400 shrink-0" />
+                  <Upload className="w-4 h-4 text-athos-400 shrink-0" />
                   <span>Capa (Máx 3000x3000 px)</span>
                 </label>
 
                 {coverDimensions && !coverError && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-[11px] font-mono text-emerald-300">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-[11px] text-emerald-300">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
                     <span className="truncate">
-                      {coverFileName ? `${coverFileName} · ` : ''}
+                      {coverFileName ? `${coverFileName}. ` : ''}
                       {coverDimensions.width}×{coverDimensions.height} px
                     </span>
                   </div>
@@ -550,7 +550,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Ex: BAILE FRACTAL // VOL. 1"
-                    className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-semibold text-sm focus:outline-none focus:border-sky-500"
+                    className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-semibold text-sm focus:outline-none focus:border-athos-500"
                   />
                 </div>
 
@@ -565,7 +565,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       value={artistName}
                       onChange={(e) => setArtistName(e.target.value)}
                       placeholder="Ex: Coletivo Subgrave"
-                      className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
+                      className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-athos-500"
                     />
                   </div>
 
@@ -579,7 +579,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       value={genre}
                       onChange={(e) => setGenre(e.target.value)}
                       placeholder="Ex: Baile Funk & Experimental"
-                      className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
+                      className="w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-athos-500"
                     />
                   </div>
                 </div>
@@ -588,10 +588,10 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                 <div className="p-3.5 bg-zinc-900/50 border border-zinc-800/90 rounded-xl space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                      <MapPin className="w-3.5 h-3.5 text-athos-400" />
                       <span>Onde a música foi feita ({REGION_NAME})</span>
                     </span>
-                    <span className="text-[11px] font-mono text-sky-400 tabular-nums">
+                    <span className="text-[11px] text-athos-400 tabular-nums">
                       {lat.toFixed(3)}°, {lng.toFixed(3)}°
                     </span>
                   </div>
@@ -604,7 +604,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       id="city-select"
                       value={`${city}|${state}`}
                       onChange={(e) => handleCitySelectChange(e.target.value)}
-                      className="w-full min-h-[44px] px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-sky-500 cursor-pointer"
+                      className="w-full min-h-[44px] px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-athos-500 cursor-pointer"
                     >
                       <optgroup label="Distrito Federal (35 RAs)">
                         {REGION_LOCATIONS.filter((c) => c.uf === 'DF').map((c) => (
@@ -640,7 +640,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       type="button"
                       onClick={() => handleUseDeviceLocation(true)}
                       disabled={locationStatus.kind === 'checking'}
-                      className="min-h-[40px] px-3 py-2 text-xs font-semibold rounded-lg border border-sky-500/60 text-sky-300 hover:bg-sky-500/10 disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+                      className="min-h-[40px] px-3 py-2 text-xs font-semibold rounded-lg border border-athos-500/60 text-athos-300 hover:bg-athos-500/10 disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                     >
                       <MapPin className="w-3.5 h-3.5" />
                       {locationStatus.kind === 'checking' ? 'Verificando localização…' : 'Colocar o pino onde estou agora'}
@@ -686,7 +686,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                   />
                   <label
                     htmlFor="batch-audio-upload"
-                    className="min-h-[44px] cursor-pointer flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 rounded-xl transition-colors"
+                    className="min-h-[44px] cursor-pointer flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-athos-500/20 hover:bg-athos-500/30 text-athos-300 border border-athos-500/40 rounded-xl transition-colors"
                   >
                     <Upload className="w-4 h-4" />
                     <span>Subir Arquivos de Música</span>
@@ -710,7 +710,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                     className="p-2.5 bg-zinc-900/70 rounded-xl border border-zinc-800/90 flex flex-col sm:flex-row sm:items-center gap-2.5"
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="text-xs font-mono text-zinc-500 w-5 shrink-0">{i + 1}.</span>
+                      <span className="text-xs text-zinc-500 w-5 shrink-0">{i + 1}.</span>
                       <input
                         type="text"
                         value={t.title}
@@ -721,7 +721,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                         }}
                         placeholder="Título da faixa..."
                         aria-label={`Título da faixa ${i + 1}`}
-                        className="flex-1 min-h-[40px] px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-white focus:outline-none focus:border-sky-500"
+                        className="flex-1 min-h-[40px] px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-white focus:outline-none focus:border-athos-500"
                       />
                     </div>
 
@@ -745,17 +745,17 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                           <>
                             <FileAudio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                             <span className="max-w-[130px] truncate">{t.audioFileName}</span>
-                            <span className="text-[10px] font-mono text-emerald-400/80">({t.audioFileSize})</span>
+                            <span className="text-[10px] text-emerald-400/80">({t.audioFileSize})</span>
                           </>
                         ) : (
                           <>
-                            <Music className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                            <Music className="w-3.5 h-3.5 text-athos-400 shrink-0" />
                             <span>Subir Áudio</span>
                           </>
                         )}
                       </label>
 
-                      <span className="text-xs font-mono text-zinc-400 tabular-nums w-11 text-right">
+                      <span className="text-xs text-zinc-400 tabular-nums w-11 text-right">
                         {formatDuration(t.durationSec)}
                       </span>
 
@@ -818,7 +818,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       type="text"
                       value={catalogNumber}
                       onChange={(e) => setCatalogNumber(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-xs focus:outline-none"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
                     />
                   </div>
                   <div>
@@ -843,7 +843,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       step="0.0001"
                       value={lat}
                       onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-xs focus:outline-none"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
                     />
                   </div>
                   <div>
@@ -856,7 +856,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                       step="0.0001"
                       value={lng}
                       onChange={(e) => setLng(parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-xs focus:outline-none"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -880,7 +880,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
           {/* Dedicated Non-Scrolling Submit Footer Bar */}
           <div className="p-3 sm:p-4 sm:px-6 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0">
             <span className="text-xs text-zinc-400 flex items-center gap-1.5 min-w-0">
-              <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-athos-400 shrink-0" />
               <span className="truncate">Destino: {city} ({state})</span>
             </span>
             <div className="flex items-center justify-end gap-2 sm:gap-3">
@@ -894,7 +894,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               <button
                 type="submit"
                 disabled={Boolean(coverError) || isSubmitting || locationStatus.kind === 'checking'}
-                className="flex-1 sm:flex-none min-h-[44px] px-4 sm:px-6 py-2.5 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-black font-bold text-xs sm:text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.4)] active:scale-95"
+                className="flex-1 sm:flex-none min-h-[44px] px-4 sm:px-6 py-2.5 bg-athos-600 hover:bg-athos-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm rounded-xl transition-all active:scale-95"
               >
                 {isSubmitting ? (
                   'Confirmando localização…'

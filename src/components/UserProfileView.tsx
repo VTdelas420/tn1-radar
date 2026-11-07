@@ -136,17 +136,16 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <h1 className="text-2xl font-bold text-white tracking-tight">
                 {user.name}
               </h1>
-              <span className="text-xs font-mono text-zinc-400">
+              <span className="text-xs text-zinc-400">
                 {user.handle}
               </span>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <MapPin className="w-3.5 h-3.5 text-sky-400" />
+              <MapPin className="w-3.5 h-3.5 text-athos-400" />
               {user.city && (
                 <>
                   <span className="text-zinc-200">{user.city}, {user.state}</span>
-                  <span aria-hidden="true">·</span>
                 </>
               )}
               <span>Desde {user.joinedDate}</span>
@@ -163,7 +162,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           {onEditProfile && (
             <button
               onClick={onEditProfile}
-              className="min-h-[40px] px-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 font-semibold hover:border-sky-500"
+              className="min-h-[40px] px-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 font-semibold hover:border-athos-500"
             >
               Editar perfil
             </button>
@@ -195,7 +194,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             onClick={() => setIsEditingTop5ModalOpen(true)}
             className="min-h-[44px] flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-100 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 rounded-xl transition-all shrink-0"
           >
-            <Edit3 className="w-3.5 h-3.5 text-sky-400" />
+            <Edit3 className="w-3.5 h-3.5 text-athos-400" />
             <span>Editar Top 5</span>
           </button>
         </div>
@@ -224,7 +223,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     />
 
                     {/* Number Badge (1 to 5) */}
-                    <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-black/85 backdrop-blur-md border border-amber-500/40 text-amber-400 font-mono font-extrabold text-xs flex items-center justify-center shadow-lg">
+                    <div className="absolute top-2 left-2 w-7 h-7 rounded-lg bg-black/85 backdrop-blur-md border border-amber-500/40 text-amber-400 font-extrabold text-xs flex items-center justify-center shadow-lg">
                       #{slotIdx + 1}
                     </div>
 
@@ -265,10 +264,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       <div className="flex items-center gap-1 text-[11px] text-zinc-400 truncate mt-0.5">
                         <span>{project.artistName}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] font-mono text-zinc-500 mt-1">
+                      <div className="flex items-center gap-1 text-[10px] text-zinc-500 mt-1">
                         <MapPin className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
                         <span className="truncate">{project.city}</span>
-                        <span>·</span>
                         <span className="text-amber-400 flex items-center gap-0.5">
                           <Star className="w-2.5 h-2.5 fill-current" />
                           {project.stats.averageRating.toFixed(1)}
@@ -285,7 +283,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       </button>
                       <button
                         onClick={() => setIsEditingTop5ModalOpen(true)}
-                        className="text-[10px] font-mono text-zinc-500 hover:text-zinc-300"
+                        className="text-[10px] text-zinc-500 hover:text-zinc-300"
                         title="Substituir álbum neste slot"
                       >
                         Trocar
@@ -306,7 +304,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors mb-2">
                   <Plus className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-zinc-400 group-hover:text-white">
+                <span className="text-xs font-bold text-zinc-400 group-hover:text-white">
                   Favorito #{slotIdx + 1}
                 </span>
                 <span className="text-[11px] text-zinc-600 mt-1">
@@ -332,7 +330,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           >
             <Disc3 className="w-4 h-4 text-emerald-400" />
             <span>Minha Biblioteca</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] font-mono text-zinc-300">
+            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] text-zinc-300">
               {libraryProjects.length}
             </span>
           </button>
@@ -347,7 +345,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           >
             <Star className="w-4 h-4 text-amber-400" />
             <span>Minhas Avaliações (Reprised)</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] font-mono text-zinc-300">
+            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] text-zinc-300">
               {userReviews.length}
             </span>
           </button>
@@ -362,7 +360,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           >
             <Bookmark className="w-4 h-4 text-zinc-300" />
             <span>Salvos / Quero Ouvir</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] font-mono text-zinc-300">
+            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] text-zinc-300">
               {savedProjects.length}
             </span>
           </button>
@@ -380,7 +378,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             >
               <Radio className="w-4 h-4 text-purple-400" />
               <span>Meus Projetos</span>
-              <span className="ml-1 px-1.5 py-0.2 rounded-md bg-purple-950/80 border border-purple-800/60 text-[10px] font-mono text-purple-300 font-bold">
+              <span className="ml-1 px-1.5 py-0.2 rounded-md bg-purple-950/80 border border-purple-800/60 text-[10px] text-purple-300 font-bold">
                 {myProjects.length}
               </span>
             </button>
@@ -398,7 +396,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           >
             <BarChart3 className="w-4 h-4 text-emerald-400" />
             <span>Lucros & Pix</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] font-mono text-emerald-400 font-bold">
+            <span className="ml-1 px-1.5 py-0.2 rounded-md bg-zinc-900 text-[10px] text-emerald-400 font-bold">
               {formatBrl(artistBalanceBrl)}
             </span>
           </button>
@@ -408,7 +406,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         {/* 1. MINHA BIBLIOTECA (Purchased/Unlocked) */}
         {activeSubTab === 'library' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+            <div className="flex items-center justify-between text-xs text-zinc-400">
               <span>NA SUA BIBLIOTECA ({libraryProjects.length})</span>
               <span className="text-emerald-400">Ouça quando quiser, direto do mapa</span>
             </div>
@@ -450,10 +448,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-bold">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-bold">
                             Na Sua Biblioteca
                           </span>
-                          <span className="text-[11px] font-mono text-zinc-500">
+                          <span className="text-[11px] text-zinc-500">
                             {project.audioQuality}
                           </span>
                         </div>
@@ -466,7 +464,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         </h3>
 
                         <p className="text-xs text-zinc-400 truncate">
-                          {project.artistName} · {project.city}, {project.state || project.country}
+                          {project.artistName} em {project.city}, {project.state || project.country}
                         </p>
 
                         <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -518,7 +516,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         {/* 2. MINHAS AVALIAÇÕES (Reprised style diary) */}
         {activeSubTab === 'reviews' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+            <div className="flex items-center justify-between text-xs text-zinc-400">
               <span>CRÍTICAS & NOTAS ATRIBUÍDAS ({userReviews.length})</span>
               <span className="text-amber-400">Padrão Reprised.app</span>
             </div>
@@ -557,11 +555,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-500">
+                            <div className="flex items-center gap-2 text-[11px] text-zinc-500">
                               <span>{rev.date}</span>
                               {proj && (
                                 <>
-                                  <span>·</span>
                                   <span>{proj.city}</span>
                                 </>
                               )}
@@ -570,7 +567,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         </div>
 
                         {/* Star Rating */}
-                        <div className="flex items-center gap-1.5 self-start sm:self-auto px-3 py-1 bg-amber-950/30 border border-amber-800/30 rounded-lg text-amber-400 font-mono font-bold text-xs">
+                        <div className="flex items-center gap-1.5 self-start sm:self-auto px-3 py-1 bg-amber-950/30 border border-amber-800/30 rounded-lg text-amber-400 font-bold text-xs">
                           <Star className="w-3.5 h-3.5 fill-current" />
                           <span>{rev.rating.toFixed(1)} / 5.0</span>
                         </div>
@@ -585,7 +582,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           {rev.tags?.map((t) => (
                             <span
                               key={t}
-                              className="text-[11px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800"
+                              className="text-[11px] text-zinc-400 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800"
                             >
                               #{t}
                             </span>
@@ -595,7 +592,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         {proj && (
                           <button
                             onClick={() => onPlayProject(proj)}
-                            className="flex items-center gap-1 text-xs font-mono text-zinc-400 hover:text-white"
+                            className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white"
                           >
                             <Play className="w-3 h-3 fill-current" />
                             <span>Tocar álbum</span>
@@ -621,7 +618,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
         {/* 3. SALVOS / QUERO OUVIR (Wishlist of interested projects) */}
         {activeSubTab === 'saved' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-zinc-400 font-mono">
+            <div className="flex items-center justify-between text-xs text-zinc-400">
               <span>PROJETOS DE INTERESSE ({savedProjects.length})</span>
               <span className="text-zinc-400">Salve para ouvir com calma ou apoiar mais tarde</span>
             </div>
@@ -646,10 +643,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-mono text-zinc-400">
+                        <span className="text-[11px] text-zinc-400">
                           {project.genre}
                         </span>
-                        <span className="text-xs font-mono font-bold text-white">
+                        <span className="text-xs font-bold text-white">
                           {project.pricingModel === 'free' ? (
                             <span className="text-emerald-400">Gratuito</span>
                           ) : (
@@ -666,7 +663,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                       </h3>
 
                       <p className="text-xs text-zinc-400 truncate">
-                        {project.artistName} · {project.city}, {project.state || project.country}
+                        {project.artistName} em {project.city}, {project.state || project.country}
                       </p>
 
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -717,7 +714,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
           <div className="space-y-6 animate-in fade-in duration-200">
             <div className="p-5 bg-zinc-950 border border-zinc-800/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 text-xs font-mono text-purple-400 mb-1">
+                <div className="flex items-center gap-2 text-xs text-purple-400 mb-1">
                   <Radio className="w-3.5 h-3.5" />
                   <span>HUB DO ARTISTA // MEUS PROJETOS</span>
                 </div>
@@ -775,13 +772,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
                       <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-bold">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-bold">
                             Lançado no Mapa ({proj.city}, {proj.state})
                           </span>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
                             {proj.catalogNumber}
                           </span>
-                          <span className="text-[11px] font-mono text-zinc-400">
+                          <span className="text-[11px] text-zinc-400">
                             {proj.audioQuality}
                           </span>
                         </div>
@@ -793,16 +790,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                           {proj.title}
                         </h4>
 
-                        <div className="flex items-center gap-3 text-xs text-zinc-400 font-mono">
+                        <div className="flex items-center gap-3 text-xs text-zinc-400">
                           <span>{proj.genre}</span>
-                          <span>·</span>
                           <span>{proj.tracks.length} {proj.tracks.length === 1 ? 'faixa' : 'faixas'}</span>
-                          <span>·</span>
                           <span className="text-amber-400">★ {proj.stats.averageRating.toFixed(1)} ({proj.reviews.length} avaliações)</span>
                         </div>
 
                         {/* Versions */}
-                        <div className="flex items-center gap-2 pt-1 text-[11px] font-mono text-zinc-500">
+                        <div className="flex items-center gap-2 pt-1 text-[11px] text-zinc-500">
                           <span>Versões:</span>
                           {proj.versions.map((v) => (
                             <span key={v.id} className="text-zinc-300 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
@@ -817,18 +812,18 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 w-full lg:w-auto shrink-0 justify-between lg:justify-end border-t lg:border-t-0 pt-3 lg:pt-0 border-zinc-800">
                       <div className="grid grid-cols-2 gap-3 p-3 bg-zinc-900/60 border border-zinc-800/80 rounded-xl text-center min-w-[200px]">
                         <div>
-                          <span className="text-sm font-bold font-mono text-white block">
+                          <span className="text-sm font-bold text-white block">
                             {formatBrl(proj.stats.grossRevenueBrl)}
                           </span>
-                          <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                          <span className="text-[10px] text-zinc-500">
                             Arrecadação
                           </span>
                         </div>
                         <div>
-                          <span className="text-sm font-bold font-mono text-emerald-400 block">
+                          <span className="text-sm font-bold text-emerald-400 block">
                             {formatBrl(proj.stats.netArtistRevenueBrl)}
                           </span>
-                          <span className="text-[10px] font-mono text-zinc-500 uppercase">
+                          <span className="text-[10px] text-zinc-500">
                             90% Artista (Pix)
                           </span>
                         </div>
@@ -944,7 +939,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
         {/* Header */}
         <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
+            <div className="flex items-center gap-2 text-xs text-amber-400">
               <Sparkles className="w-3.5 h-3.5" />
               <span>CURADORIA PESSOAL</span>
             </div>
@@ -954,7 +949,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white text-sm font-mono px-2 py-1"
+            className="text-zinc-400 hover:text-white text-sm px-2 py-1"
           >
             ✕
           </button>
@@ -962,7 +957,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
 
         {/* Current 5 Slots Status */}
         <div className="p-5 border-b border-zinc-800/80 bg-zinc-900/30">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 block mb-2.5">
+          <span className="text-[11px] text-zinc-400 block mb-2.5">
             Álbuns Favoritos no Perfil (1 a 5)
           </span>
 
@@ -982,7 +977,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
                       : 'bg-zinc-950 border-dashed border-zinc-800 hover:border-zinc-700'
                   }`}
                 >
-                  <span className="text-[10px] font-mono font-bold text-amber-400 mb-1">
+                  <span className="text-[10px] font-bold text-amber-400 mb-1">
                     #{slotIdx + 1}
                   </span>
 
@@ -1009,7 +1004,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
                       className="flex-1 flex flex-col items-center justify-center py-2 text-zinc-500 hover:text-amber-400"
                     >
                       <Plus className="w-4 h-4 mb-1" />
-                      <span className="text-[10px] font-mono">Escolher</span>
+                      <span className="text-[10px]">Escolher</span>
                     </button>
                   )}
                 </div>
@@ -1021,7 +1016,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
         {/* Project Selector List */}
         <div className="p-5 flex-1 overflow-y-auto space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
+            <span className="text-xs text-zinc-400">
               {activeSlotToSelect !== null
                 ? `Selecione um projeto para o Slot #${activeSlotToSelect + 1}:`
                 : 'Clique em um projeto para adicionar ao próximo slot vago:'}
@@ -1074,17 +1069,16 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
                         {project.title}
                       </h4>
                       {isSelected && (
-                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
+                        <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-800/40">
                           #{currentSlotIndex + 1}
                         </span>
                       )}
                     </div>
                     <p className="text-[11px] text-zinc-400 truncate">
-                      {project.artistName} · {project.city}
+                      {project.artistName} em {project.city}
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 mt-0.5">
+                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5">
                       <span>{project.genre}</span>
-                      <span>·</span>
                       <span className="text-amber-400">★ {project.stats.averageRating.toFixed(1)}</span>
                     </div>
                   </div>
@@ -1096,7 +1090,7 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
 
         {/* Footer actions */}
         <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-950">
-          <span className="text-xs font-mono text-zinc-500">
+          <span className="text-xs text-zinc-500">
             {selectedIds.length}/5 slots preenchidos
           </span>
           <div className="flex items-center gap-2">

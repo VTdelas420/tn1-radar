@@ -49,8 +49,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
         {/* Top bar over image */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-xs font-mono text-zinc-300 z-10">
-          <span className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[11px] border border-white/10 tracking-wider">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-xs text-zinc-300 z-10">
+          <span className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[11px] border border-white/10">
             {project.catalogNumber}
           </span>
 
@@ -98,7 +98,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </button>
 
         {/* Reprised Rating score badge over image */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px] font-mono">
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[11px]">
           <span className="flex items-center gap-1 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded border border-white/10 text-amber-400 font-bold">
             <Star className="w-3 h-3 fill-current" />
             <span>{project.stats.averageRating.toFixed(1)}</span>
@@ -118,7 +118,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
               <span>{project.city}, {project.state || project.country}</span>
             </span>
-            <span aria-hidden="true" className="text-zinc-600">·</span>
             <span className="truncate">{project.genre}</span>
           </div>
 
@@ -131,9 +130,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </h3>
 
           {/* Artist handle & year */}
-          <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5 font-mono">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5">
             <span>{project.artistHandle}</span>
-            <span aria-hidden="true">·</span>
             <span>{project.releaseDate.split('-')[0]}</span>
           </div>
 
@@ -145,14 +143,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         {/* Pricing & Action */}
         <div className="pt-3.5 mt-3 border-t border-zinc-800/80 flex items-center justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-zinc-500 font-mono">
+            <div className="text-[11px] text-zinc-500">
               {project.pricingModel === 'free'
                 ? 'Lançamento'
                 : project.pricingModel === 'name_your_price'
                 ? 'Pague quanto quiser'
                 : 'Valor digital'}
             </div>
-            <div className="text-sm font-semibold font-mono text-zinc-100">
+            <div className="text-sm font-semibold text-zinc-100">
               {project.pricingModel === 'free' ? (
                 <span className="text-emerald-400">Gratuito</span>
               ) : project.pricingModel === 'name_your_price' ? (

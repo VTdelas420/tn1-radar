@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { azulejoSvg } from '../utils/azulejo';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import { REGION_CAMERA_BOUNDS, isInRegion } from '../config/region';
 
@@ -13,11 +14,7 @@ interface PinDropMiniMapProps {
 }
 
 const PIN_HTML = `
-  <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
-    <div class="w-7 h-7 rounded-full bg-sky-400 border-2 border-white shadow-[0_0_16px_rgba(56,189,248,0.9)] flex items-center justify-center">
-      <div class="w-2 h-2 rounded-full bg-black"></div>
-    </div>
-  </div>`;
+  <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${azulejoSvg('novo-lancamento', 'selected', 30)}</div>`;
 
 /** Small map in the release form: click or drag to set the exact spot the music was made. */
 export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChange, focusKey }) => {

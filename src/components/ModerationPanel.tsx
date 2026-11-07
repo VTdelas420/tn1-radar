@@ -55,7 +55,7 @@ export const ModerationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) 
             <div key={r.id} className="p-3.5 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-mono text-zinc-500">
+                  <p className="text-[11px] text-zinc-500">
                     {r.targetType === 'project' ? 'Lançamento' : 'Avaliação'} ·{' '}
                     {new Date(r.createdAt).toLocaleString('pt-BR')}
                   </p>

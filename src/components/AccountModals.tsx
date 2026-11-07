@@ -11,7 +11,7 @@ const REASON_TEXT: Record<AuthReason, string> = {
 };
 
 const inputClass =
-  'w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-sky-500';
+  'w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-athos-500';
 
 const Shell: React.FC<{ title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }> = ({
   title,
@@ -120,7 +120,7 @@ const LoginModal: React.FC<{ reason: AuthReason }> = ({ reason }) => {
         <button
           type="submit"
           disabled={busy}
-          className="w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm disabled:opacity-60"
+          className="w-full min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-athos-600 hover:bg-athos-500 text-white font-bold text-sm disabled:opacity-60"
         >
           <Mail className="w-4 h-4" />
           {busy ? 'Aguarde…' : mode === 'signin' ? 'Entrar com e-mail' : 'Criar conta'}
@@ -130,7 +130,7 @@ const LoginModal: React.FC<{ reason: AuthReason }> = ({ reason }) => {
       <div className="mt-4 flex items-center justify-between text-xs">
         <button
           type="button"
-          className="text-sky-300 hover:text-white"
+          className="text-athos-300 hover:text-white"
           onClick={() => {
             setMode(mode === 'signin' ? 'signup' : 'signin');
             setError(null);
@@ -267,7 +267,7 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
               aria-pressed={role === value}
               className={`min-h-[52px] rounded-xl border flex items-center justify-center gap-2 text-sm font-semibold transition-colors disabled:opacity-40 ${
                 role === value
-                  ? 'bg-sky-500/15 border-sky-400 text-sky-200'
+                  ? 'bg-athos-500/15 border-athos-400 text-athos-200'
                   : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
               }`}
             >
@@ -299,7 +299,7 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
           <>
             <div>
               <label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5 mb-1.5">
-                <MapPin className="w-3.5 h-3.5 text-sky-400" /> Sua RA ou cidade *
+                <MapPin className="w-3.5 h-3.5 text-athos-400" /> Sua RA ou cidade *
               </label>
               <select value={place} onChange={(e) => setPlace(e.target.value)} className={inputClass}>
                 <optgroup label="Distrito Federal">
@@ -355,7 +355,7 @@ const ProfileSetupModal: React.FC<{ forceArtist: boolean }> = ({ forceArtist }) 
         <button
           type="submit"
           disabled={busy}
-          className="w-full min-h-[44px] rounded-xl bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm disabled:opacity-60"
+          className="w-full min-h-[44px] rounded-xl bg-athos-600 hover:bg-athos-500 text-white font-bold text-sm disabled:opacity-60"
         >
           {busy ? 'Salvando…' : 'Salvar perfil'}
         </button>

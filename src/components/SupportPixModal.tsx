@@ -111,7 +111,7 @@ export const SupportPixModal: React.FC<{ project: MusicProject; onClose: () => v
                       aria-pressed={amount === v && !custom}
                       className={`min-h-[44px] rounded-xl border text-sm font-bold tabular-nums ${
                         amount === v && !custom
-                          ? 'bg-sky-500/15 border-sky-400 text-sky-200'
+                          ? 'bg-ipe/15 border-ipe text-ipe'
                           : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white'
                       }`}
                     >
@@ -129,7 +129,7 @@ export const SupportPixModal: React.FC<{ project: MusicProject; onClose: () => v
                   }}
                   placeholder="Outro valor (R$)"
                   aria-label="Outro valor em reais"
-                  className="mt-2 w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-sky-500"
+                  className="mt-2 w-full min-h-[44px] px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-athos-500"
                 />
               </div>
 
@@ -152,11 +152,11 @@ export const SupportPixModal: React.FC<{ project: MusicProject; onClose: () => v
                     value={payload ?? ''}
                     aria-label="Código Pix copia e cola"
                     onFocus={(e) => e.target.select()}
-                    className="flex-1 min-w-0 min-h-[44px] px-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-[11px] font-mono"
+                    className="flex-1 min-w-0 min-h-[44px] px-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 text-[11px]"
                   />
                   <button
                     onClick={copy}
-                    className="min-h-[44px] px-4 rounded-xl bg-sky-400 hover:bg-sky-300 text-black text-sm font-bold flex items-center gap-1.5 shrink-0"
+                    className="min-h-[44px] px-4 rounded-xl bg-ipe hover:brightness-110 text-black text-sm font-bold flex items-center gap-1.5 shrink-0"
                   >
                     {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     {copied ? 'Copiado' : 'Copiar'}

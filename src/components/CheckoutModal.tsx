@@ -104,7 +104,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-4 h-4 text-emerald-400" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+            <h3 className="text-sm font-bold text-white">
               {isCompleted ? 'Apoio Confirmado' : 'Apoio Direto // Pagamento Brasileiro'}
             </h3>
           </div>
@@ -137,7 +137,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
             {/* Lossless Assets Ready to Download */}
             <div className="p-4 bg-zinc-900/70 border border-zinc-800 rounded-xl space-y-3 text-left">
-              <div className="text-xs font-mono text-zinc-400 flex items-center justify-between">
+              <div className="text-xs text-zinc-400 flex items-center justify-between">
                 <span>PACOTE DIGITAL DISPONÍVEL</span>
                 <span className="text-emerald-400 font-bold">24-BIT / 96KHZ FLAC</span>
               </div>
@@ -149,7 +149,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     e.preventDefault();
                     alert(`Iniciando download do pacote Master Lossless de "${project.title}" (FLAC + WAV + Encarte Digital).`);
                   }}
-                  className="w-full flex items-center justify-between p-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs font-mono text-zinc-200 transition-colors"
+                  className="w-full flex items-center justify-between p-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-xs text-zinc-200 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <Download className="w-4 h-4 text-emerald-400" />
@@ -179,7 +179,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 className="w-14 h-14 rounded-lg object-cover shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-mono text-zinc-400 truncate">
+                <div className="text-[11px] text-zinc-400 truncate">
                   {project.catalogNumber} · {project.city}, {project.state || 'BR'}
                 </div>
                 <h4 className="text-xs font-bold text-white truncate">{project.title}</h4>
@@ -189,7 +189,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
             {/* Amount Selection in BRL */}
             <div>
-              <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-1.5">
+              <div className="flex items-center justify-between text-xs text-zinc-400 mb-1.5">
                 <label>VALOR DA CONTRIBUIÇÃO (BRL)</label>
                 {project.pricingModel === 'free' && (
                   <span className="text-emerald-400">Projeto Gratuito (Doação Opcional)</span>
@@ -198,7 +198,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 font-mono text-xs">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">
                     R$
                   </span>
                   <input
@@ -207,7 +207,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     step="1"
                     value={amount}
                     onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                    className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white font-mono text-sm focus:outline-none focus:border-zinc-500"
+                    className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white text-sm focus:outline-none focus:border-zinc-500"
                   />
                 </div>
 
@@ -218,7 +218,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       key={preset}
                       type="button"
                       onClick={() => setAmount(preset)}
-                      className="px-2.5 py-2 text-xs font-mono bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-lg border border-zinc-800"
+                      className="px-2.5 py-2 text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-lg border border-zinc-800"
                     >
                       R${preset}
                     </button>
@@ -227,13 +227,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
 
               {validationError && (
-                <p className="text-xs text-rose-400 mt-1 font-mono">{validationError}</p>
+                <p className="text-xs text-rose-400 mt-1">{validationError}</p>
               )}
             </div>
 
             {/* Transparent Split in Reais */}
             {amount > 0 && (
-              <div className="p-3 bg-zinc-900/40 rounded-xl border border-zinc-800 text-xs font-mono space-y-1.5">
+              <div className="p-3 bg-zinc-900/40 rounded-xl border border-zinc-800 text-xs space-y-1.5">
                 <div className="flex items-center justify-between text-emerald-400 font-semibold">
                   <span>90% cai direto na conta do artista:</span>
                   <span>{formatBrl(split.artistNetBrl)}</span>
@@ -248,7 +248,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Brazilian Payment Rails Selection */}
             {amount > 0 && (
               <div className="space-y-3">
-                <label className="text-xs font-mono text-zinc-400 block">
+                <label className="text-xs text-zinc-400 block">
                   FORMA DE PAGAMENTO BRASILEIRA
                 </label>
 
@@ -264,7 +264,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   >
                     <QrCode className="w-4 h-4 mb-1.5 text-emerald-400" />
                     <div className="text-xs font-bold">Pix Instantâneo</div>
-                    <div className="text-[10px] text-zinc-500 font-mono">Confirmação em 2s</div>
+                    <div className="text-[10px] text-zinc-500">Confirmação em 2s</div>
                   </button>
 
                   <button
@@ -278,7 +278,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   >
                     <CreditCard className="w-4 h-4 mb-1.5 text-amber-400" />
                     <div className="text-xs font-bold">Cartão de Crédito</div>
-                    <div className="text-[10px] text-zinc-500 font-mono">Em até 6x sem juros</div>
+                    <div className="text-[10px] text-zinc-500">Em até 6x sem juros</div>
                   </button>
 
                   <button
@@ -292,7 +292,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   >
                     <Smartphone className="w-4 h-4 mb-1.5 text-purple-400" />
                     <div className="text-xs font-bold">NuPay / PicPay</div>
-                    <div className="text-[10px] text-zinc-500 font-mono">App direto no celular</div>
+                    <div className="text-[10px] text-zinc-500">App direto no celular</div>
                   </button>
 
                   <button
@@ -304,16 +304,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
-                    <Barcode className="w-4 h-4 mb-1.5 text-sky-400" />
+                    <Barcode className="w-4 h-4 mb-1.5 text-athos-400" />
                     <div className="text-xs font-bold">Boleto Bancário</div>
-                    <div className="text-[10px] text-zinc-500 font-mono">Vencimento em 3 dias</div>
+                    <div className="text-[10px] text-zinc-500">Vencimento em 3 dias</div>
                   </button>
                 </div>
 
                 {/* Sub-form based on Brazilian method */}
                 {paymentMethod === 'pix' && (
                   <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-zinc-300">PIX COPIA E COLA</span>
                       <button
                         type="button"
@@ -324,7 +324,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <span>{copiedPix ? 'Chave Copiada!' : 'Copiar Código'}</span>
                       </button>
                     </div>
-                    <p className="text-[11px] font-mono text-zinc-500 break-all bg-zinc-950 p-2.5 rounded border border-zinc-800/80">
+                    <p className="text-[11px] text-zinc-500 break-all bg-zinc-950 p-2.5 rounded border border-zinc-800/80">
                       {pixCopiaCola}
                     </p>
                     <div className="flex items-center gap-2 text-[11px] text-zinc-400">
@@ -338,7 +338,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-3">
                     {/* Installments selection */}
                     <div>
-                      <label className="text-[11px] font-mono text-zinc-400 block mb-1">
+                      <label className="text-[11px] text-zinc-400 block mb-1">
                         PARCELAMENTO
                       </label>
                       <select
@@ -388,11 +388,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
                 {paymentMethod === 'boleto' && (
                   <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-2 text-xs">
-                    <div className="flex items-center justify-between font-mono text-zinc-400">
+                    <div className="flex items-center justify-between text-zinc-400">
                       <span>LINHA DIGITÁVEL DO BOLETO</span>
                       <span className="text-zinc-500">Banco do Brasil</span>
                     </div>
-                    <div className="bg-zinc-950 p-2.5 rounded font-mono text-[11px] text-zinc-300 border border-zinc-800">
+                    <div className="bg-zinc-950 p-2.5 rounded text-[11px] text-zinc-300 border border-zinc-800">
                       00190.00009 01234.567890 12345.678901 1 9876000000{amount.toFixed(0)}00
                     </div>
                     <p className="text-[11px] text-zinc-400">

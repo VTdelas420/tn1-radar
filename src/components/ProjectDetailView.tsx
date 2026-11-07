@@ -185,7 +185,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                   maxLength={1000}
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-sky-500"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-athos-500"
                 />
                 {reportState === 'error' && (
                   <p className="text-xs text-red-300">Não foi possível enviar. Tente de novo.</p>
@@ -228,15 +228,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
           </div>
 
           <div className="p-5 bg-zinc-950 border border-zinc-800/80 rounded-2xl space-y-3">
-            <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-400">
+              <MapPin className="w-3.5 h-3.5 text-athos-400 shrink-0" />
               <span className="text-zinc-200 font-medium">
                 {project.city}, {project.state || project.country}
               </span>
-              <span aria-hidden="true">·</span>
               <span>{project.genre}</span>
-              <span aria-hidden="true">·</span>
-              <span className="font-mono text-zinc-500">{project.catalogNumber}</span>
+              <span className="text-zinc-500">{project.catalogNumber}</span>
             </div>
 
             <p className="text-[15px] text-zinc-300 leading-relaxed">
@@ -260,12 +258,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400 mt-2 tabular-nums">
               <span className="text-zinc-200 font-semibold">{project.artistName}</span>
-              <span aria-hidden="true">·</span>
               <span className="flex items-center gap-1 text-amber-400 font-bold">
                 <Star className="w-4 h-4 fill-current" />
-                {project.stats.averageRating.toFixed(1)} · Avaliações
+                {project.stats.averageRating.toFixed(1)} nas avaliações
               </span>
-              <span aria-hidden="true">·</span>
               <span className="text-zinc-300">
                 {project.tracks.length} {project.tracks.length === 1 ? 'faixa' : 'faixas'}
               </span>
@@ -279,7 +275,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
               <div className="text-lg font-extrabold text-white mt-0.5">Apoie o artista direto no Pix</div>
               <div className="text-xs text-emerald-400 mt-1 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>100% vai para o artista · sem taxa</span>
+                <span>Tudo vai para o artista, sem taxa</span>
               </div>
             </div>
 
@@ -291,7 +287,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                   className={`min-h-[48px] px-5 py-3 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
                     inLibrary
                       ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
-                      : 'bg-zinc-900 border-zinc-700 text-zinc-100 hover:border-sky-500'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-100 hover:border-athos-500'
                   }`}
                 >
                   {inLibrary ? <CheckCircle2 className="w-4 h-4" /> : <Library className="w-4 h-4" />}
@@ -300,7 +296,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
               )}
               <button
                 onClick={() => onOpenCheckout(project)}
-                className="min-h-[48px] px-6 py-3 bg-sky-400 hover:bg-sky-300 text-black font-bold text-sm rounded-xl shadow-[0_0_25px_rgba(56,189,248,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="min-h-[48px] px-6 py-3 bg-ipe hover:brightness-110 text-black font-bold text-sm rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <Heart className="w-4 h-4" />
                 <span>Apoiar com Pix</span>
@@ -315,7 +311,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
               <h2 className="text-sm font-bold text-white">
                 Faixas ({project.tracks.length})
               </h2>
-              <span className="text-xs text-zinc-500 font-mono">{project.audioQuality}</span>
+              <span className="text-xs text-zinc-500">{project.audioQuality}</span>
             </div>
 
             <div className="divide-y divide-zinc-900">
@@ -348,7 +344,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                       }}
                       className={`min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center shrink-0 transition-transform ${
                         isPlayingThisTrack
-                          ? 'bg-sky-400 text-black scale-105'
+                          ? 'bg-athos-600 text-white scale-105'
                           : 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
                       }`}
                       aria-label={isPlayingThisTrack ? `Pausar ${track.title}` : `Tocar ${track.title}`}
@@ -364,9 +360,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                       <div className="text-sm font-semibold text-white truncate">
                         {track.trackNumber}. {track.title}
                       </div>
-                      <div className="text-xs text-zinc-500 font-mono">
-                        {track.bpm} BPM · {track.keySignature}
-                        {track.audioFileName ? ` · ${track.audioFileName}` : ''}
+                      <div className="text-xs text-zinc-500">
+                        {track.bpm} BPM, {track.keySignature}
+                        {track.audioFileName ? `, ${track.audioFileName}` : ''}
                       </div>
                     </div>
 
@@ -376,13 +372,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                           key={barIdx}
                           style={{ height: `${bar}%` }}
                           className={`flex-1 min-w-[2px] rounded-full ${
-                            isPlayingThisTrack ? 'bg-sky-400' : 'bg-zinc-700'
+                            isPlayingThisTrack ? 'bg-athos-400' : 'bg-zinc-700'
                           }`}
                         />
                       ))}
                     </div>
 
-                    <div className="text-xs font-mono text-zinc-400 tabular-nums shrink-0">
+                    <div className="text-xs text-zinc-400 tabular-nums shrink-0">
                       {Math.floor(track.durationSec / 60)}:
                       {(track.durationSec % 60).toString().padStart(2, '0')}
                     </div>
@@ -402,8 +398,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 >
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-white truncate">{item.title}</div>
-                    <div className="text-xs text-zinc-400 font-mono mt-0.5 tabular-nums">
-                      {formatBrl(item.priceBrl)} · <span className="text-amber-400">Restam {item.stock}</span>
+                    <div className="text-xs text-zinc-400 mt-0.5 tabular-nums">
+                      {formatBrl(item.priceBrl)}. <span className="text-amber-400">Restam {item.stock}</span>
                     </div>
                   </div>
                   <button
@@ -449,11 +445,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs">
                   <span className="font-bold text-white">{rev.userName}</span>
-                  <span aria-hidden="true" className="text-zinc-600">·</span>
                   <span className="text-zinc-500">{rev.date}</span>
                 </div>
 
-                <div className="flex items-center gap-1 text-amber-400 font-mono font-bold text-xs tabular-nums">
+                <div className="flex items-center gap-1 text-amber-400 font-bold text-xs tabular-nums">
                   <Star className="w-3.5 h-3.5 fill-current" />
                   <span>{rev.rating.toFixed(1)}</span>
                 </div>
@@ -503,7 +498,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                       />
                     </button>
                   ))}
-                  <span className="text-sm font-mono font-bold text-amber-400 ml-2">
+                  <span className="text-sm font-bold text-amber-400 ml-2">
                     {reviewScore.toFixed(1)}
                   </span>
                 </div>
@@ -537,7 +532,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="min-h-[44px] px-5 py-2.5 bg-sky-400 hover:bg-sky-300 text-black font-bold text-xs sm:text-sm rounded-xl transition-colors"
+                  className="min-h-[44px] px-5 py-2.5 bg-athos-600 hover:bg-athos-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors"
                 >
                   Publicar Avaliação
                 </button>
