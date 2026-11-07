@@ -1045,7 +1045,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       const showLabel = isSelected || currentZoom >= 10.5;
       const html = `
         <div class="relative" style="width: 44px; height: 44px;">
-          ${pinMarkup(proj.id, tileState, 34, 44)}
+          ${pinMarkup(proj.id, tileState, 30, 44)}
           ${
             showLabel
               ? `<div class="absolute ${labelAnchorClass} px-1.5 py-0.5 bg-black/85 text-[12px] whitespace-nowrap pointer-events-none ${
