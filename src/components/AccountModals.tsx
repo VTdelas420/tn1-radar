@@ -19,12 +19,12 @@ const Shell: React.FC<{ title: string; subtitle?: string; onClose: () => void; c
   onClose,
   children,
 }) => (
-  <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+  <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md">
     <div
       role="dialog"
       aria-modal="true"
       aria-label={title}
-      className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl my-6"
+      className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl my-auto"
     >
       <div className="p-5 border-b border-zinc-800 flex items-start justify-between gap-3">
         <div>

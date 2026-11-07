@@ -97,7 +97,7 @@ export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChan
         aria-label="Mini-mapa: clique ou arraste o pino até o ponto exato"
       />
       <p className="text-[11px] text-zinc-400">
-        Clique no mapa ou arraste o pino até a rua ou quadra onde a música foi feita. Isso é opcional.
+        Toque no mapa ou arraste o pino até a rua ou quadra onde a música foi feita. Isso é opcional.
       </p>
     </div>
   );

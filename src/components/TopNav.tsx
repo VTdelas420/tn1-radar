@@ -18,12 +18,12 @@ export const TopNav: React.FC<TopNavProps> = ({
   const { enabled, user, profile, isAdmin, openAuth, openProfileSetup, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-zinc-800/80 px-4 md:px-8 h-16 flex items-center">
-      <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-8">
+    <header className="sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-zinc-800/80 px-3 md:px-8 h-14 md:h-16 flex items-center">
+      <div className="max-w-7xl w-full mx-auto flex items-center justify-between gap-1.5 sm:gap-8">
         {/* Zone 1: Brand Wordmark (Single text element, Top Bar Contract) */}
         <button
           onClick={() => setActiveTab('map')}
-          className="text-lg font-extrabold tracking-tight text-white hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 min-h-[44px] flex items-center focus:outline-none"
+          className="text-base sm:text-lg font-extrabold tracking-tight text-white hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 min-h-[44px] flex items-center focus:outline-none"
           aria-label="Ir para o mapa principal"
         >
           TN1 Radar
@@ -32,42 +32,45 @@ export const TopNav: React.FC<TopNavProps> = ({
         {/* Zone 2: 3 Concise Single-Line Navigation Links (Hick's Law: 3 core destinations) */}
         <nav
           aria-label="Navegação principal"
-          className="flex items-center gap-2 sm:gap-6 text-sm font-medium overflow-x-auto no-scrollbar"
+          className="flex items-center gap-0.5 sm:gap-6 text-sm font-medium"
         >
           <button
             onClick={() => setActiveTab('map')}
-            className={`min-h-[44px] px-3 flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
+            aria-label="Mapa"
+            className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'map'
                 ? 'border-sky-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
             <MapPin className="w-4 h-4 text-sky-400" />
-            <span>Mapa Principal</span>
+            <span className="hidden sm:inline">Mapa Principal</span>
           </button>
 
           <button
             onClick={() => setActiveTab('reprised')}
-            className={`min-h-[44px] px-3 flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
+            aria-label="Avaliações"
+            className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'reprised'
                 ? 'border-sky-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
             <Star className="w-4 h-4 text-amber-400" />
-            <span>Avaliações</span>
+            <span className="hidden sm:inline">Avaliações</span>
           </button>
 
           <button
             onClick={() => setActiveTab('profile')}
-            className={`min-h-[44px] px-3 flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
+            aria-label="Perfil"
+            className={`min-h-[44px] min-w-[44px] px-2 sm:px-3 flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
               activeTab === 'profile'
                 ? 'border-sky-400 text-white font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-100'
             }`}
           >
             <UserIcon className="w-4 h-4 text-zinc-300" />
-            <span>Perfil</span>
+            <span className="hidden sm:inline">Perfil</span>
           </button>
         </nav>
 
@@ -145,11 +148,11 @@ export const TopNav: React.FC<TopNavProps> = ({
           )}
           <button
             onClick={onOpenNewProject}
-            className="min-h-[44px] px-4 py-2 text-xs sm:text-sm font-bold text-black bg-sky-400 hover:bg-sky-300 rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95 flex items-center gap-2 whitespace-nowrap shrink-0"
+            className="min-h-[44px] min-w-[44px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold text-black bg-sky-400 hover:bg-sky-300 rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.3)] active:scale-95 flex items-center gap-2 whitespace-nowrap shrink-0"
             aria-label="Publicar novo projeto"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Novo Lançamento</span>
+            <span className="hidden sm:inline">Novo Lançamento</span>
           </button>
         </div>
       </div>

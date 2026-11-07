@@ -428,7 +428,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-zinc-100 flex flex-col font-sans selection:bg-white selection:text-zinc-950 pb-28">
+    <div className="min-h-screen bg-[#0c0d0e] text-zinc-100 flex flex-col font-sans selection:bg-white selection:text-zinc-950 pb-24 md:pb-28">
       {/* Top Bar Navigation */}
       <TopNav
         activeTab={activeTab}
@@ -441,7 +441,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-4 md:px-8 py-2 sm:py-6">
         {/* If a project detail is open, view it */}
         {selectedProject ? (
           <ProjectDetailView

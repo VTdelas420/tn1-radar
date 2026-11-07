@@ -301,7 +301,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               <button
                 key={`empty-slot-${slotIdx}`}
                 onClick={() => setIsEditingTop5ModalOpen(true)}
-                className="group flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-900/30 rounded-xl p-6 text-center transition-all min-h-[220px]"
+                className="group flex flex-col items-center justify-center border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-900/30 rounded-xl p-4 md:p-6 text-center transition-all min-h-[120px] md:min-h-[220px]"
               >
                 <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors mb-2">
                   <Plus className="w-5 h-5" />
@@ -310,7 +310,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                   Favorito #{slotIdx + 1}
                 </span>
                 <span className="text-[11px] text-zinc-600 mt-1">
-                  Clique para escolher
+                  Escolher álbum
                 </span>
               </button>
             );
@@ -939,8 +939,8 @@ const EditTop5Modal: React.FC<EditTop5ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden my-auto">
         {/* Header */}
         <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
           <div>

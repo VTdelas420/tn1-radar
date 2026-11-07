@@ -37,8 +37,8 @@ export const ModerationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) 
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div role="dialog" aria-modal="true" aria-label="Moderação" className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl my-6">
+    <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md">
+      <div role="dialog" aria-modal="true" aria-label="Moderação" className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl my-auto">
         <div className="p-5 border-b border-zinc-800 flex items-center justify-between">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <Shield className="w-5 h-5 text-amber-300" /> Moderação

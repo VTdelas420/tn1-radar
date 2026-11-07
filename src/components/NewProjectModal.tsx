@@ -432,22 +432,22 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 overflow-y-auto bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden my-auto">
         {/* Header + Zeigarnik Progress Indicator */}
-        <div className="p-5 border-b border-zinc-800 bg-black/60 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="p-4 sm:p-5 border-b border-zinc-800 bg-black/60 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
               <h3 className="text-base font-bold text-white tracking-tight">
                 Novo Lançamento no Mapa
               </h3>
               <p className="text-xs text-zinc-400">
-                Preencha o título, capa (máx. 3000×3000 px), cidade brasileira e envie os arquivos de música.
+                Preencha o título, a capa (máx. 3000×3000 px), o lugar no DF ou Entorno e envie as músicas.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              className="min-w-[44px] min-h-[44px] shrink-0 flex items-center justify-center rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
               aria-label="Fechar"
             >
               <X className="w-5 h-5" />
@@ -475,8 +475,8 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col max-h-[80vh]">
-          <div className="p-6 space-y-6 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col max-h-[calc(100dvh-10.5rem)] sm:max-h-[80vh]">
+          <div className="p-4 sm:p-6 space-y-6 overflow-y-auto overscroll-contain flex-1">
             {/* 1. Capa (Máx 3000x3000 px) & Identidade Essencial */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               {/* Cover Art Uploader */}
@@ -878,12 +878,12 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
           </div>
 
           {/* Dedicated Non-Scrolling Submit Footer Bar */}
-          <div className="p-4 px-6 bg-zinc-950 border-t border-zinc-800 flex items-center justify-between gap-3 shrink-0">
-            <span className="text-xs text-zinc-400 flex items-center gap-1.5">
+          <div className="p-3 sm:p-4 sm:px-6 bg-zinc-950 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0">
+            <span className="text-xs text-zinc-400 flex items-center gap-1.5 min-w-0">
               <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-              <span>Destino: {city} ({state})</span>
+              <span className="truncate">Destino: {city} ({state})</span>
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-end gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={onClose}
@@ -894,9 +894,16 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               <button
                 type="submit"
                 disabled={Boolean(coverError) || isSubmitting || locationStatus.kind === 'checking'}
-                className="min-h-[44px] px-6 py-2.5 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-black font-bold text-xs sm:text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.4)] active:scale-95"
+                className="flex-1 sm:flex-none min-h-[44px] px-4 sm:px-6 py-2.5 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-black font-bold text-xs sm:text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.4)] active:scale-95"
               >
-                {isSubmitting ? 'Confirmando localização…' : 'Publicar no Mapa Imediatamente'}
+                {isSubmitting ? (
+                  'Confirmando localização…'
+                ) : (
+                  <>
+                    <span className="sm:hidden">Publicar no mapa</span>
+                    <span className="hidden sm:inline">Publicar no Mapa Imediatamente</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
