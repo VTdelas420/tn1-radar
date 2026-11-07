@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { MusicProject, PricingModel } from '../types/music';
+import { MusicProject } from '../types/music';
 import type { ReleaseFiles } from '../lib/persistence';
 import { PinDropMiniMap } from './PinDropMiniMap';
 import {
@@ -79,9 +79,6 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   >({ kind: 'idle' });
   const [verifiedAt, setVerifiedAt] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pricingModel, setPricingModel] = useState<PricingModel>('paid');
-  const [priceBrl, setPriceBrl] = useState(20.0);
-  const [minPriceBrl, setMinPriceBrl] = useState(10.0);
   const [accentColor] = useState('#38bdf8');
   const [description, setDescription] = useState('');
   const [linerNotes, setLinerNotes] = useState('');
@@ -386,9 +383,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       coordinates: validCoords,
       coverArt: coverArtUrl,
       accentColor,
-      pricingModel,
-      priceBrl: pricingModel === 'free' ? 0 : priceBrl,
-      minPriceBrl: pricingModel === 'name_your_price' ? minPriceBrl : undefined,
+      // Launch phase: no prices — listening is free, support is a direct Pix
+      pricingModel: 'free',
+      priceBrl: 0,
       audioQuality: '24-bit / 96kHz Lossless FLAC',
       catalogNumber: catalogNumber.trim() || `BR-${Math.floor(Math.random() * 900 + 100)}`,
       description:
@@ -396,7 +393,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
         'Lançamento independente captado em estúdio autônomo. Sem algoritmos de recomendação.',
       linerNotes:
         linerNotes.trim() ||
-        'Produção 100% autônoma. 90% do valor vai direto para a conta Pix do criador.',
+        'Produção 100% autônoma. Apoio direto no Pix do artista.',
       tags: [genre, city, state, 'Lossless'],
       versions: [
         { id: 'v1', name: 'Master Oficial 24/96', tag: 'Master', date: 'Hoje', isLatest: true },
@@ -778,89 +775,12 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               </div>
             </div>
 
-            {/* 3. Preço & Repasse Direto via Pix (90% Artista) */}
-            <div className="space-y-3 pt-4 border-t border-zinc-800">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-white">Modalidade de Acesso</h4>
-                <span className="text-xs text-emerald-400 font-medium">
-                  90% do valor vai direto para seu Pix
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setPricingModel('free')}
-                  className={`min-h-[56px] p-3 rounded-xl border text-left transition-all ${
-                    pricingModel === 'free'
-                      ? 'bg-zinc-900 border-sky-400 text-white'
-                      : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-emerald-400">Gratuito</div>
-                  <div className="text-[11px] text-zinc-400">Streaming e download livre</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPricingModel('paid')}
-                  className={`min-h-[56px] p-3 rounded-xl border text-left transition-all ${
-                    pricingModel === 'paid'
-                      ? 'bg-zinc-900 border-sky-400 text-white'
-                      : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white">Preço Fixo (R$)</div>
-                  <div className="text-[11px] text-zinc-400">Venda digital via Pix/Cartão</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPricingModel('name_your_price')}
-                  className={`min-h-[56px] p-3 rounded-xl border text-left transition-all ${
-                    pricingModel === 'name_your_price'
-                      ? 'bg-zinc-900 border-sky-400 text-white'
-                      : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-white">Pague Quanto Quiser</div>
-                  <div className="text-[11px] text-zinc-400">Apoio voluntário dos fãs</div>
-                </button>
-              </div>
-
-              {pricingModel === 'paid' && (
-                <div className="flex items-center gap-3 pt-1">
-                  <label htmlFor="price-brl-input" className="text-xs text-zinc-300">
-                    Valor em Reais (R$):
-                  </label>
-                  <input
-                    id="price-brl-input"
-                    type="number"
-                    min="5"
-                    step="1"
-                    value={priceBrl}
-                    onChange={(e) => setPriceBrl(parseFloat(e.target.value) || 0)}
-                    className="w-32 min-h-[40px] px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-sky-500"
-                  />
-                </div>
-              )}
-
-              {pricingModel === 'name_your_price' && (
-                <div className="flex items-center gap-3 pt-1">
-                  <label htmlFor="min-price-brl-input" className="text-xs text-zinc-300">
-                    Valor mínimo (R$):
-                  </label>
-                  <input
-                    id="min-price-brl-input"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={minPriceBrl}
-                    onChange={(e) => setMinPriceBrl(parseFloat(e.target.value) || 0)}
-                    className="w-32 min-h-[40px] px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-sky-500"
-                  />
-                </div>
-              )}
+            {/* 3. Access: listening is always free; support goes to the artist's Pix */}
+            <div className="pt-4 border-t border-zinc-800">
+              <p className="text-xs text-zinc-400">
+                Ouvir é sempre livre no TN1 Radar. Quem quiser apoiar paga direto na sua chave Pix
+                (cadastre ou altere em <span className="text-zinc-200">Editar perfil</span>).
+              </p>
             </div>
 
             {/* Progressive Disclosure: Optional Advanced Details */}
