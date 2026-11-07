@@ -518,37 +518,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             }
 
             if (sigla !== 'DF') {
-              // Outside the launch region: no zoom-in, just an "em breve" hint
-              layer.on({
-                mouseover: () => {
-                  if (isDisposed) return;
-                  setHoveredSectorName(`${stateName} · em breve no TN1 Radar`);
-                },
-                mouseout: () => {
-                  if (isDisposed) return;
-                  setHoveredSectorName(null);
-                },
-              });
+              // Outside the launch region: not interactive
+              (layer as L.Path).options.interactive = false;
               return;
             }
 
             layer.on({
-              mouseover: (e) => {
-                if (isDisposed) return;
-                const target = e.target;
-                target.setStyle({
-                  color: '#7dd3fc',
-                  weight: 2.6,
-                  fillColor: '#0284c7',
-                  fillOpacity: map.getZoom() < 5.5 ? 0.14 : 0.04,
-                });
-                setHoveredSectorName(`Estado: ${stateName} (${sigla}) · Clique para aproximar`);
-              },
-              mouseout: (e) => {
-                if (isDisposed) return;
-                syncLayersByZoom(map.getZoom());
-                setHoveredSectorName(null);
-              },
               click: (e) => {
                 if (isDisposed) return;
                 L.DomEvent.stopPropagation(e);
@@ -605,37 +580,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               !!centre && centre.lat <= -15.49 && centre.lat >= -16.06 && centre.lng >= -48.29 && centre.lng <= -47.3;
             const isDfRa = insideDfBox && !!cityName && findRegionLocation(cityName, 'DF') !== undefined;
             const uf = isDfRa ? 'DF' : 'GO';
-            if (cityName) {
-              layer.bindTooltip(isDfRa ? `RA (DF): ${cityName}` : cityName, {
-                className: 'substream-city-tooltip',
-                sticky: true,
-                direction: 'top',
-              });
-            }
             layer.on({
-              mouseover: (e) => {
-                if (isDisposed) return;
-                const target = e.target;
-                target.setStyle({
-                  color: '#7dd3fc',
-                  weight: 1.5,
-                  opacity: 0.95,
-                  fillColor: '#0ea5e9',
-                  fillOpacity: map.getZoom() >= 10 ? 0.08 : 0.22,
-                });
-                if (cityName) {
-                  setHoveredSectorName(
-                    isDfRa
-                      ? `Região Administrativa (DF): ${cityName} · Clique para ver ruas/prédios`
-                      : `Município: ${cityName}${uf ? ` (${uf})` : ''} · Clique para aproximar`
-                  );
-                }
-              },
-              mouseout: (e) => {
-                if (isDisposed) return;
-                syncLayersByZoom(map.getZoom());
-                setHoveredSectorName(null);
-              },
               click: (e) => {
                 if (isDisposed) return;
                 L.DomEvent.stopPropagation(e);
@@ -703,36 +648,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             const bairroName = feature.properties?.b;
             const cityName = feature.properties?.c;
             const uf = feature.properties?.u;
-            if (bairroName) {
-              layer.bindTooltip(`Bairro: ${bairroName} (${cityName})`, {
-                className: 'substream-city-tooltip',
-                sticky: true,
-                direction: 'top',
-              });
-            }
             layer.on({
-              mouseover: (e) => {
-                if (isDisposed) return;
-                const target = e.target;
-                target.setStyle({
-                  color: '#67e8f9',
-                  weight: 2.2,
-                  opacity: 1.0,
-                  dashArray: '',
-                  fillColor: '#06b6d4',
-                  fillOpacity: 0.08,
-                });
-                if (bairroName) {
-                  setHoveredSectorName(
-                    `Bairro / Setor: ${bairroName} · ${cityName} (${uf}) · Clique para arquitetura real`
-                  );
-                }
-              },
-              mouseout: (e) => {
-                if (isDisposed) return;
-                syncLayersByZoom(map.getZoom());
-                setHoveredSectorName(null);
-              },
               click: (e) => {
                 if (isDisposed) return;
                 L.DomEvent.stopPropagation(e);
