@@ -24,7 +24,7 @@ import {
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
-import { pinMarkup } from '../utils/pin';
+import { GROUND_BOX, GROUND_PANE, pinGroundMarkup, pinMarkup } from '../utils/pin';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import {
   REGION_BOUNDS,
@@ -450,6 +450,11 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
     const labelsGroup = L.layerGroup().addTo(map);
     labelsLayerGroupRef.current = labelsGroup;
+
+    // What pins cast on the map sits under every pin and label
+    const groundPane = map.createPane(GROUND_PANE);
+    groundPane.style.zIndex = '450';
+    groundPane.style.pointerEvents = 'none';
 
     const markerGroup = L.layerGroup().addTo(map);
     markersLayerGroupRef.current = markerGroup;
@@ -1078,6 +1083,19 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       });
 
       marker.addTo(group);
+
+      // Light and shadow the pin casts on the map
+      L.marker([pos.lat, pos.lng], {
+        pane: GROUND_PANE,
+        interactive: false,
+        keyboard: false,
+        icon: L.divIcon({
+          html: pinGroundMarkup(proj.id, tileState, 30),
+          className: 'custom-substream-pin',
+          iconSize: [GROUND_BOX, GROUND_BOX],
+          iconAnchor: [GROUND_BOX / 2, GROUND_BOX / 2],
+        }),
+      }).addTo(group);
     });
   }, [pinProjects, densityGroups, currentSpreadMap, activePinProject, currentProjectId, isPlaying, currentZoom, flyToProjectPin]);
 

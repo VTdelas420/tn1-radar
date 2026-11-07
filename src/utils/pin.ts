@@ -96,3 +96,21 @@ export function pinMarkup(seed: string, state: PinState = 'idle', size = 30, box
     </div>
   </div>`;
 }
+
+/** Leaflet pane for what pins cast on the map: below every pin, so no glow covers another pin. */
+export const GROUND_PANE = 'tn1Ground';
+export const GROUND_BOX = 120;
+
+/**
+ * What a pin casts on the map: a soft darkening around it (so the light stands
+ * out from the streets) and a flattened, pixel-stepped pool of its light on the
+ * ground, which shrinks while the pin floats up.
+ */
+export function pinGroundMarkup(seed: string, state: PinState = 'idle', size = 30): string {
+  const stateClass = state === 'idle' ? '' : ` is-${state}`;
+  const floatDelay = phase(seed, FLOAT_S);
+  return `<div class="tn1-ground${stateClass}" style="width:${GROUND_BOX}px;height:${GROUND_BOX}px;--pin:${size}px;--light:url(${lightTexture(state)})">
+    <div class="tn1-ground__dim"></div>
+    <div class="tn1-ground__pool" style="animation-delay:${floatDelay}"></div>
+  </div>`;
+}
