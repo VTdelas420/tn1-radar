@@ -9,7 +9,16 @@ service cloud.firestore {
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 200;
+        && request.resource.data.title.size() <= 200
+        // Launch phase: pin must be inside DF + Entorno (same rectangle as src/config/region.ts, plus margin)
+        && request.resource.data.regionVerifiedAt is number
+        && request.resource.data.state in ['DF', 'GO']
+        && request.resource.data.coordinates.lat is number
+        && request.resource.data.coordinates.lng is number
+        && request.resource.data.coordinates.lat >= -17.15
+        && request.resource.data.coordinates.lat <= -14.85
+        && request.resource.data.coordinates.lng >= -49.1
+        && request.resource.data.coordinates.lng <= -47.0;
       allow update, delete: if request.auth != null
         && resource.data.ownerUid == request.auth.uid;
     }

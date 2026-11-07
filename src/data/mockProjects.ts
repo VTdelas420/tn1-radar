@@ -1,6 +1,6 @@
 import { MusicProject, UserProfile } from '../types/music';
 
-export const INITIAL_PROJECTS: MusicProject[] = [
+const SOURCE_PROJECTS: MusicProject[] = [
   {
     id: 'proj-sp-01',
     title: 'SUBTERRÂNEO: A LUZ DO CAOS',
@@ -488,8 +488,8 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     name: 'Thiago Mendes',
     handle: '@thiagom_critica',
     bio: 'Pesquisador de música independente brasileira e entusiasta de post-baile e manguebeat.',
-    city: 'São Paulo',
-    state: 'SP',
+    city: 'Taguatinga',
+    state: 'DF',
     joinedDate: 'Março 2026',
     ratedProjectsCount: 38,
     reviewsCount: 19,
@@ -533,8 +533,8 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     name: 'Lívia Castro',
     handle: '@livia_discoteca',
     bio: 'DJ de pesquisa, colecionadora de cassetes e entusiasta de aparelhagens do Pará.',
-    city: 'Belo Horizonte',
-    state: 'MG',
+    city: 'Sobradinho',
+    state: 'DF',
     joinedDate: 'Fevereiro 2026',
     ratedProjectsCount: 52,
     reviewsCount: 27,
@@ -564,8 +564,8 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     name: 'Renato Araújo',
     handle: '@renato_grooves',
     bio: 'Músico e produtor focado em ritmos afro-brasileiros e texturas binaurais.',
-    city: 'Salvador',
-    state: 'BA',
+    city: 'Valparaíso de Goiás',
+    state: 'GO',
     joinedDate: 'Janeiro 2026',
     ratedProjectsCount: 44,
     reviewsCount: 21,
@@ -591,3 +591,38 @@ export const INITIAL_USER_PROFILES: UserProfile[] = [
     savedProjectIds: ['proj-sp-01']
   }
 ];
+
+/**
+ * Placeholder releases for the DF + Entorno launch phase, built from the
+ * original samples (same ids, covers and tracks). All marked [DEMO]:
+ * remove before going live.
+ */
+const DEMO_PLACES: { id: string; city: string; state: string; lat: number; lng: number }[] = [
+  { id: 'proj-sp-01', city: 'Ceilândia', state: 'DF', lat: -15.8205, lng: -48.1132 },
+  { id: 'proj-ssa-02', city: 'Taguatinga', state: 'DF', lat: -15.8335, lng: -48.0566 },
+  { id: 'proj-rec-03', city: 'Brasília (Plano Piloto)', state: 'DF', lat: -15.7938, lng: -47.8827 },
+  { id: 'proj-bel-04', city: 'Gama', state: 'DF', lat: -16.0169, lng: -48.0652 },
+  { id: 'proj-bh-05', city: 'Águas Lindas de Goiás', state: 'GO', lat: -15.7617, lng: -48.2817 },
+];
+
+export const INITIAL_PROJECTS: MusicProject[] = SOURCE_PROJECTS.flatMap((p, i) => {
+  const place = DEMO_PLACES.find((d) => d.id === p.id);
+  if (!place) return [];
+  const where = place.state === 'DF' ? `${place.city} (DF)` : `${place.city} (GO)`;
+  return [
+    {
+      ...p,
+      title: `[DEMO] ${p.title}`,
+      artistName: `Artista Exemplo ${i + 1}`,
+      artistHandle: `@exemplo${i + 1}`,
+      artistBio: `Perfil de exemplo em ${where}. Será substituído por artistas reais antes do lançamento.`,
+      city: place.city,
+      state: place.state,
+      coordinates: { lat: place.lat, lng: place.lng },
+      description: `Lançamento de demonstração posicionado em ${where} para testar o mapa do TN1 Radar.`,
+      linerNotes: 'Conteúdo de exemplo. Áudio e capa provisórios.',
+      tags: [p.genre, place.city, place.state, 'Demo'],
+      stats: { ...p.stats, topRegions: [{ region: where, plays: 0, revenue: 0 }] },
+    },
+  ];
+});

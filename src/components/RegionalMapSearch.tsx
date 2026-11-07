@@ -25,6 +25,44 @@ import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
 import { createTacticalUrbanCanvasLayer } from '../utils/tacticalUrbanLayer';
+import {
+  REGION_BOUNDS,
+  REGION_CENTER,
+  REGION_NAME,
+  ENTORNO_CITIES,
+  findRegionLocation,
+  isInRegion,
+  isRegionPlace,
+} from '../config/region';
+
+/** Cached per feature: is this polygon (city/RA) inside the launch region? */
+function featureInRegion(feature: GeoJSON.Feature | undefined): boolean {
+  if (!feature) return false;
+  const props = (feature.properties ??= {}) as { __inRegion?: boolean };
+  if (props.__inRegion !== undefined) return props.__inRegion;
+  let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+  const walk = (c: unknown): void => {
+    if (Array.isArray(c) && typeof c[0] === 'number') {
+      const [lng, lat] = c as number[];
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (lng < minLng) minLng = lng;
+      if (lng > maxLng) maxLng = lng;
+    } else if (Array.isArray(c)) c.forEach(walk);
+  };
+  walk((feature.geometry as GeoJSON.Polygon | GeoJSON.MultiPolygon | null)?.coordinates);
+  props.__inRegion = minLat <= maxLat && isInRegion((minLat + maxLat) / 2, (minLng + maxLng) / 2);
+  return props.__inRegion;
+}
+
+// Outside the launch region everything is drawn dark: "em breve".
+const DIM_POLY_STYLE = {
+  color: '#1e293b',
+  weight: 0.4,
+  opacity: 0.45,
+  fillColor: '#000000',
+  fillOpacity: 0.5,
+};
 
 
 interface RegionalMapSearchProps {
@@ -100,8 +138,8 @@ const MAJOR_INTERIOR_CITIES = [
   { name: 'Marabá', uf: 'PA', lat: -5.3686, lng: -49.1178 },
 ];
 
-const BRAZIL_CENTER: [number, number] = [-14.235, -52.5];
-const DEFAULT_ZOOM = 4;
+const BRAZIL_CENTER: [number, number] = REGION_CENTER;
+const DEFAULT_ZOOM = 9;
 
 export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   projects,
@@ -139,14 +177,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   const labelsLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const markersLayerGroupRef = useRef<L.LayerGroup | null>(null);
 
+  // Launch phase: only releases from DF + Entorno appear on the map
   const brazilProjects = useMemo(() => {
     return projects.filter(
       (p) =>
-        !p.country ||
-        p.country.toLowerCase() === 'brasil' ||
-        p.country.toLowerCase() === 'brazil' ||
-        ALL_BRAZIL_UFS.has((p.state || '').toUpperCase()) ||
-        p.id.startsWith('proj-')
+        isInRegion(p.coordinates.lat, p.coordinates.lng, 15) ||
+        isRegionPlace(p.city, p.state)
     );
   }, [projects]);
 
@@ -158,7 +194,9 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       if (priceFilter === 'free' && project.pricingModel !== 'free') return false;
       if (priceFilter === 'paid' && project.pricingModel === 'free') return false;
 
-      if (selectedStateFilter !== 'all') {
+      if (selectedStateFilter === 'ENTORNO') {
+        if ((project.state || '').toUpperCase() !== 'GO') return false;
+      } else if (selectedStateFilter !== 'all') {
         const matchUf = (project.state || '').toUpperCase() === selectedStateFilter.toUpperCase();
         const matchCity = project.city.toLowerCase() === selectedStateFilter.toLowerCase();
         if (!matchUf && !matchCity) return false;
@@ -236,17 +274,10 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     [geographicallyOrderedProjects, activePinProject, flyToProjectPin]
   );
 
-  // Reset to full Brazil overview
+  // Reset to the launch region overview (DF + Entorno)
   const handleResetView = useCallback(() => {
     const map = mapInstanceRef.current;
-    if (map && statesLayerRef.current) {
-      map.flyToBounds(statesLayerRef.current.getBounds(), {
-        padding: [24, 24],
-        duration: 0.9,
-      });
-    } else {
-      map?.flyTo(BRAZIL_CENTER, DEFAULT_ZOOM, { duration: 0.9 });
-    }
+    map?.flyToBounds(REGION_BOUNDS, { padding: [24, 24], duration: 0.9 });
     setSelectedStateFilter('all');
     setActiveStateSector(null);
     setActivePinProject(null);
@@ -420,14 +451,18 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       if (isDisposed || mapInstanceRef.current !== map) return;
 
       if (citiesLayerRef.current && map.hasLayer(citiesLayerRef.current)) {
-        citiesLayerRef.current.setStyle({
-          color: z >= 11 ? '#0284c7' : z >= 7 ? '#38bdf8' : z >= 5.5 ? '#2563eb' : '#1d4ed8',
-          weight: z >= 11 ? 1.4 : z >= 8 ? 1.1 : z >= 6 ? 0.65 : 0.3,
-          opacity: z >= 13 ? 0.5 : z >= 7 ? 0.75 : z >= 5.5 ? 0.45 : 0.22,
-          fillColor: '#020617',
-          // At zoom >= 7.5, make polygon fill 0% opacity so real OSM streets & 2.5D buildings in tilePane are 100% crisp
-          fillOpacity: z >= 7.5 ? 0.0 : z >= 5.5 ? 0.35 : 0.15,
-        });
+        citiesLayerRef.current.setStyle((feature) =>
+          featureInRegion(feature)
+            ? {
+                color: z >= 11 ? '#0284c7' : z >= 7 ? '#38bdf8' : z >= 5.5 ? '#2563eb' : '#1d4ed8',
+                weight: z >= 11 ? 1.4 : z >= 8 ? 1.1 : z >= 6 ? 0.65 : 0.3,
+                opacity: z >= 13 ? 0.5 : z >= 7 ? 0.75 : z >= 5.5 ? 0.45 : 0.22,
+                fillColor: '#020617',
+                // At zoom >= 7.5, make polygon fill 0% opacity so real OSM streets & 2.5D buildings in tilePane are 100% crisp
+                fillOpacity: z >= 7.5 ? 0.0 : z >= 5.5 ? 0.35 : 0.15,
+              }
+            : { ...DIM_POLY_STYLE, fillOpacity: z >= 7.5 ? 0.7 : DIM_POLY_STYLE.fillOpacity }
+        );
       }
 
       if (neighborhoodsLayerRef.current) {
@@ -449,13 +484,17 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       }
 
       if (statesLayerRef.current && map.hasLayer(statesLayerRef.current)) {
-        statesLayerRef.current.setStyle({
-          color: '#38bdf8',
-          weight: z >= 6 ? 2.2 : 1.7,
-          opacity: z >= 12 ? 0.6 : 0.95,
-          fillColor: '#0284c7',
-          fillOpacity: z >= 7.5 ? 0.0 : 0.01,
-        });
+        statesLayerRef.current.setStyle((feature) =>
+          (feature?.properties?.sigla || '').toUpperCase() === 'DF'
+            ? {
+                color: '#38bdf8',
+                weight: z >= 6 ? 2.2 : 1.7,
+                opacity: z >= 12 ? 0.6 : 0.95,
+                fillColor: '#0284c7',
+                fillOpacity: z >= 7.5 ? 0.0 : 0.01,
+              }
+            : { ...DIM_POLY_STYLE, weight: 1, opacity: 0.6, fillOpacity: z >= 7.5 ? 0.0 : 0.45 }
+        );
       }
 
       // Critical Z-order hierarchy:
@@ -479,18 +518,36 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         if (isDisposed || mapInstanceRef.current !== map) return;
 
         const statesLayer = L.geoJSON(statesGeoJson, {
-          style: () => ({
-            color: '#38bdf8',
-            weight: 1.7,
-            opacity: 0.95,
-            fillColor: '#0284c7',
-            fillOpacity: 0.01,
-          }),
+          style: (feature) =>
+            (feature?.properties?.sigla || '').toUpperCase() === 'DF'
+              ? {
+                  color: '#38bdf8',
+                  weight: 1.7,
+                  opacity: 0.95,
+                  fillColor: '#0284c7',
+                  fillOpacity: 0.01,
+                }
+              : { ...DIM_POLY_STYLE, weight: 1, opacity: 0.6, fillOpacity: 0.45 },
           onEachFeature: (feature, layer) => {
             const sigla = (feature.properties?.sigla || '').toUpperCase();
             const stateName = feature.properties?.name || sigla;
             if (sigla) {
               stateFeatureLayersRef.current.set(sigla, layer);
+            }
+
+            if (sigla !== 'DF') {
+              // Outside the launch region: no zoom-in, just an "em breve" hint
+              layer.on({
+                mouseover: () => {
+                  if (isDisposed) return;
+                  setHoveredSectorName(`${stateName} · em breve no TN1 Radar`);
+                },
+                mouseout: () => {
+                  if (isDisposed) return;
+                  setHoveredSectorName(null);
+                },
+              });
+              return;
             }
 
             layer.on({
@@ -507,7 +564,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               },
               mouseout: (e) => {
                 if (isDisposed) return;
-                statesLayer.resetStyle(e.target);
+                syncLayersByZoom(map.getZoom());
                 setHoveredSectorName(null);
               },
               click: (e) => {
@@ -532,10 +589,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         statesLayer.addTo(map);
         statesLayerRef.current = statesLayer;
 
-        const bounds = statesLayer.getBounds();
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, { padding: [24, 24], animate: false });
-        }
+        map.fitBounds(REGION_BOUNDS, { padding: [24, 24], animate: false });
         syncLayersByZoom(map.getZoom());
       })
       .catch((err) => {
@@ -551,17 +605,30 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         if (isDisposed || mapInstanceRef.current !== map) return;
 
         const citiesLayer = L.geoJSON(citiesGeoJson, {
-          style: () => ({
-            color: '#1d4ed8',
-            weight: 0.35,
-            opacity: 0.25,
-            fillColor: '#020617',
-            fillOpacity: 0.2,
-          }),
+          style: (feature) =>
+            featureInRegion(feature)
+              ? {
+                  color: '#1d4ed8',
+                  weight: 0.35,
+                  opacity: 0.25,
+                  fillColor: '#020617',
+                  fillOpacity: 0.2,
+                }
+              : DIM_POLY_STYLE,
           onEachFeature: (feature, layer) => {
             const cityName = feature.properties?.n;
-            const uf = feature.properties?.u;
-            const isDfRa = uf === 'DF';
+            if (!featureInRegion(feature)) {
+              // Outside the launch region: dark, no tooltip, clicks fall through
+              (layer as L.Path).options.interactive = false;
+              return;
+            }
+            // DF RA = name in the RA list and polygon centre inside the DF rectangle
+            // (tells the Planaltina RA apart from Planaltina de Goiás).
+            const centre = (layer as L.Polygon).getBounds?.().getCenter();
+            const insideDfBox =
+              !!centre && centre.lat <= -15.49 && centre.lat >= -16.06 && centre.lng >= -48.29 && centre.lng <= -47.3;
+            const isDfRa = insideDfBox && !!cityName && findRegionLocation(cityName, 'DF') !== undefined;
+            const uf = isDfRa ? 'DF' : 'GO';
             if (cityName) {
               layer.bindTooltip(isDfRa ? `RA (DF): ${cityName}` : cityName, {
                 className: 'substream-city-tooltip',
@@ -590,7 +657,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               },
               mouseout: (e) => {
                 if (isDisposed) return;
-                citiesLayer.resetStyle(e.target);
+                syncLayersByZoom(map.getZoom());
                 setHoveredSectorName(null);
               },
               click: (e) => {
@@ -628,6 +695,11 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       .then((nbGeoJson) => {
         if (isDisposed || mapInstanceRef.current !== map) return;
 
+        // Launch phase: only neighborhoods of DF + Entorno
+        nbGeoJson.features = (nbGeoJson.features || []).filter(
+          (f: GeoJSON.Feature) =>
+            typeof f.properties?.lat === 'number' && isInRegion(f.properties.lat, f.properties.lng, 15)
+        );
         const nodes: { b: string; c: string; u: string; lat: number; lng: number }[] = [];
         for (const feat of nbGeoJson.features || []) {
           if (feat.properties?.b && typeof feat.properties?.lat === 'number') {
@@ -1154,6 +1226,21 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       return;
     }
 
+    if (val === 'ENTORNO') {
+      setActiveStateSector(null);
+      const b = L.latLngBounds(ENTORNO_CITIES.map((c) => [c.lat, c.lng] as [number, number]));
+      mapInstanceRef.current?.flyToBounds(b, { padding: [36, 36], duration: 0.9 });
+      return;
+    }
+
+    // A single RA or Entorno city: fly to its centre at neighbourhood level
+    const place = findRegionLocation(val);
+    if (place) {
+      setActiveStateSector(null);
+      mapInstanceRef.current?.flyTo([place.lat, place.lng], place.uf === 'DF' ? 12.5 : 12, { duration: 0.9 });
+      return;
+    }
+
     const stMeta = BRAZIL_STATES_METADATA.find((s) => s.sigla === val);
     if (stMeta) {
       setActiveStateSector({ sigla: stMeta.sigla, name: stMeta.name });
@@ -1204,7 +1291,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar cidade, RA de Brasília, estado, artista ou estilo..."
+            placeholder="Buscar RA, cidade do Entorno, artista ou estilo..."
             aria-label="Buscar por cidade, estado ou som"
             className="w-full min-h-[44px] pl-10 pr-8 py-2 text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500 transition-colors"
           />
@@ -1227,12 +1314,23 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             aria-label="Filtrar por polo regional"
             className="w-full min-h-[44px] px-3.5 py-2 text-sm bg-zinc-950 border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-sky-500 cursor-pointer"
           >
-            <option value="all">Navegar: Todo o Brasil (27 Estados + 35 RAs DF)</option>
-            {BRAZIL_STATES_METADATA.map((st) => (
-              <option key={st.sigla} value={st.sigla}>
-                {st.sigla} — {st.name} ({st.sigla === 'DF' ? '35 Regiões Administrativas' : st.capital})
-              </option>
-            ))}
+            <option value="all">Navegar: {REGION_NAME} (35 RAs + {ENTORNO_CITIES.length} cidades)</option>
+            <option value="DF">Distrito Federal — todas as RAs</option>
+            <option value="ENTORNO">Entorno (GO) — todas as cidades</option>
+            <optgroup label="Regiões Administrativas do DF">
+              {DF_ADMINISTRATIVE_REGIONS.map((ra) => (
+                <option key={`df-${ra.n}`} value={ra.n}>
+                  {ra.n}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Entorno (GO)">
+              {ENTORNO_CITIES.map((c) => (
+                <option key={`go-${c.n}`} value={c.n}>
+                  {c.n}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
 
@@ -1307,17 +1405,19 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 ? hoveredSectorName
                 : activeStateSector
                 ? `Setor: ${activeStateSector.name} (${activeStateSector.sigla})`
-                : 'Brasil · Dê zoom para revelar cidades, ruas, quadras e prédios 2.5D'}
+                : currentZoom < 7
+                ? `Lançamentos só no ${REGION_NAME} por enquanto · resto do Brasil em breve`
+                : `${REGION_NAME} · Dê zoom para revelar RAs, ruas, quadras e prédios 2.5D`}
             </span>
           </div>
 
-          {(activeStateSector || currentZoom > 4.5) && (
+          {(activeStateSector || Math.abs(currentZoom - DEFAULT_ZOOM) > 1) && (
             <button
               onClick={handleResetView}
               className="min-h-[36px] px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/50 text-xs font-mono font-semibold text-sky-300 hover:text-white transition-colors shadow-lg flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Visão Brasil (ESC)</span>
+              <span>Visão DF + Entorno (ESC)</span>
             </button>
           )}
         </div>
@@ -1398,7 +1498,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
           <button
             onClick={handleResetView}
             className="min-w-[44px] min-h-[44px] bg-black/90 hover:bg-blue-950/60 backdrop-blur-md border border-blue-900/50 rounded-xl text-sky-400 hover:text-white shadow-xl transition-all flex items-center justify-center"
-            title="Recentrar Visão Geral do Brasil (ESC)"
+            title="Recentrar no DF + Entorno (ESC)"
             aria-label="Recentrar Visão Geral do Brasil"
           >
             <RotateCcw className="w-4 h-4" />

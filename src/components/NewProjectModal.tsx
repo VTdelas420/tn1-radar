@@ -2,6 +2,13 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { MusicProject, PricingModel } from '../types/music';
 import type { ReleaseFiles } from '../lib/persistence';
 import {
+  REGION_LOCATIONS,
+  REGION_NAME,
+  ENTORNO_CITIES,
+  checkDeviceInRegion,
+  findRegionLocation,
+} from '../config/region';
+import {
   X,
   Plus,
   Trash2,
@@ -55,11 +62,18 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [catalogNumber, setCatalogNumber] = useState('BR-025');
   const [genre, setGenre] = useState('Baile Funk & Experimental');
   const [subgenre, setSubgenre] = useState('Bass / Post-Baile');
-  const [city, setCity] = useState('São Paulo');
-  const [state, setState] = useState('SP');
+  const [city, setCity] = useState('Brasília (Plano Piloto)');
+  const [state, setState] = useState('DF');
   const [country, setCountry] = useState('Brasil');
-  const [lat, setLat] = useState(-23.5505);
-  const [lng, setLng] = useState(-46.6333);
+  const [lat, setLat] = useState(-15.7938);
+  const [lng, setLng] = useState(-47.8827);
+
+  // Device-location check: only artists physically in DF + Entorno can publish
+  const [locationStatus, setLocationStatus] = useState<
+    { kind: 'idle' | 'checking' | 'ok' | 'error'; message?: string }
+  >({ kind: 'idle' });
+  const [verifiedAt, setVerifiedAt] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [pricingModel, setPricingModel] = useState<PricingModel>('paid');
   const [priceBrl, setPriceBrl] = useState(20.0);
   const [minPriceBrl, setMinPriceBrl] = useState(10.0);
@@ -67,33 +81,9 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
   const [description, setDescription] = useState('');
   const [linerNotes, setLinerNotes] = useState('');
 
-  // Complete list of all 5,487 Brazilian Municipalities + DF Regiões Administrativas
-  const [allBrazilCities, setAllBrazilCities] = useState<BrazilMunicipalityEntry[]>(() => [
-    ...BRAZIL_STATE_CAPITALS.filter((c) => c.state !== 'DF').map((c) => ({
-      n: c.city,
-      uf: c.state,
-      lat: c.lat,
-      lng: c.lng,
-    })),
-    ...DF_ADMINISTRATIVE_REGIONS,
-  ]);
+  // Launch phase: only the 35 DF RAs + Entorno cities
+  const allBrazilCities: BrazilMunicipalityEntry[] = REGION_LOCATIONS;
   const [citySearchFilter, setCitySearchFilter] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/data/brazil-cities-list.json')
-      .then((res) => res.json())
-      .then((data: BrazilMunicipalityEntry[]) => {
-        if (!cancelled && Array.isArray(data) && data.length > 0) {
-          setAllBrazilCities(data);
-        }
-      })
-      .catch((err) => console.error('Failed to load Brazilian cities list:', err));
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Cities filtered by selected UF or global search query across all 5,453 Brazilian cities
   const availableCitiesForSelect = useMemo(() => {
@@ -319,6 +309,29 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     }
   };
 
+  /** Checks the device is inside the region; optionally moves the pin there (rounded to ~100 m). */
+  const handleUseDeviceLocation = async (placePin: boolean) => {
+    setLocationStatus({ kind: 'checking' });
+    const res = await checkDeviceInRegion();
+    if (!res.ok) {
+      setVerifiedAt(null);
+      setLocationStatus({ kind: 'error', message: res.message });
+      return false;
+    }
+    setVerifiedAt(Date.now());
+    if (placePin) {
+      setLat(Number(res.lat.toFixed(3)));
+      setLng(Number(res.lng.toFixed(3)));
+    }
+    setLocationStatus({
+      kind: 'ok',
+      message: placePin
+        ? 'Localização confirmada. O pino vai ficar onde você está (precisão de ~100 m).'
+        : 'Localização confirmada.',
+    });
+    return true;
+  };
+
   const handleAddTrack = () => {
     setTracks([
       ...tracks,
@@ -337,11 +350,20 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || coverError) return;
+    if (!title.trim() || coverError || isSubmitting) return;
 
-    const validCoords = resolveBrazilCoordinates(city, state, lat, lng);
+    setIsSubmitting(true);
+    const verified = verifiedAt !== null || (await handleUseDeviceLocation(false));
+    setIsSubmitting(false);
+    if (!verified) return;
+
+    if (!findRegionLocation(city, state)) {
+      setLocationStatus({ kind: 'error', message: 'Escolha uma RA do DF ou uma cidade do Entorno.' });
+      return;
+    }
+    const validCoords = { lat, lng };
 
     const newProj: MusicProject = {
       id: `proj-${Date.now()}`,
@@ -400,6 +422,7 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
       },
       supporters: [],
       reviews: [],
+      regionVerifiedAt: verifiedAt ?? Date.now(),
     };
 
     onSaveProject(newProj, { cover: coverFile, tracks: tracks.map((t) => t.file) });
@@ -559,105 +582,68 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
                   </div>
                 </div>
 
-                {/* All Brazilian States (27 UFs) & All 5,453+ Brazilian Cities */}
+                {/* Launch region: 35 DF RAs + Entorno (GO) */}
                 <div className="p-3.5 bg-zinc-900/50 border border-zinc-800/90 rounded-xl space-y-3">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-white flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Localização no Mapa ({allBrazilCities.length.toLocaleString('pt-BR')} municípios do Brasil)</span>
+                      <span>Onde a música foi feita ({REGION_NAME})</span>
                     </span>
                     <span className="text-[11px] font-mono text-sky-400 tabular-nums">
-                      {lat.toFixed(2)}°, {lng.toFixed(2)}°
+                      {lat.toFixed(3)}°, {lng.toFixed(3)}°
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                    <div className="sm:col-span-4">
-                      <label htmlFor="state-select" className="text-[11px] font-medium text-zinc-400 block mb-1">
-                        ESTADO (27 UFs)
-                      </label>
-                      <select
-                        id="state-select"
-                        value={state}
-                        onChange={(e) => handleStateSelectChange(e.target.value)}
-                        className="w-full min-h-[44px] px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-sky-500 cursor-pointer"
-                      >
-                        {BRAZIL_STATE_CAPITALS.map((st) => (
-                          <option key={st.state} value={st.state}>
-                            {st.state} — {st.city}
+                  <div>
+                    <label htmlFor="city-select" className="text-[11px] font-medium text-zinc-400 block mb-1">
+                      REGIÃO ADMINISTRATIVA OU CIDADE DO ENTORNO
+                    </label>
+                    <select
+                      id="city-select"
+                      value={`${city}|${state}`}
+                      onChange={(e) => handleCitySelectChange(e.target.value)}
+                      className="w-full min-h-[44px] px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-sky-500 cursor-pointer"
+                    >
+                      <optgroup label="Distrito Federal (35 RAs)">
+                        {REGION_LOCATIONS.filter((c) => c.uf === 'DF').map((c) => (
+                          <option key={`DF-${c.n}`} value={`${c.n}|DF`}>
+                            {c.n}
                           </option>
                         ))}
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-8">
-                      <label htmlFor="city-select" className="text-[11px] font-medium text-zinc-400 block mb-1">
-                        {citySearchFilter
-                          ? `Cidade / Região no Mapa (${availableCitiesForSelect.length} encontradas)`
-                          : state === 'DF'
-                          ? `Região Administrativa de Brasília (${availableCitiesForSelect.length} RAs no DF)`
-                          : `Cidade no Mapa (${availableCitiesForSelect.length} cidades em ${state})`}
-                      </label>
-                      <select
-                        id="city-select"
-                        value={`${city}|${state}`}
-                        onChange={(e) => handleCitySelectChange(e.target.value)}
-                        className="w-full min-h-[44px] px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-sky-500 cursor-pointer"
-                      >
-                        {!availableCitiesForSelect.some((c) => c.n === city && c.uf === state) && (
-                          <option value={`${city}|${state}`}>
-                            {city} ({state})
-                          </option>
-                        )}
-                        {availableCitiesForSelect.map((c, idx) => (
-                          <option key={`${c.uf}-${c.n}-${idx}`} value={`${c.n}|${c.uf}`}>
-                            {c.n} ({c.uf})
+                      </optgroup>
+                      <optgroup label="Entorno (GO)">
+                        {ENTORNO_CITIES.map((c) => (
+                          <option key={`GO-${c.n}`} value={`${c.n}|GO`}>
+                            {c.n}
                           </option>
                         ))}
-                      </select>
-                    </div>
+                      </optgroup>
+                    </select>
                   </div>
 
-                  {/* Instant Search Across All Brazilian Cities & DF Regiões Administrativas */}
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <input
-                      id="city-search-input"
-                      type="text"
-                      value={citySearchFilter}
-                      onChange={(e) => handleCitySearchChange(e.target.value)}
-                      placeholder="Pesquisar qualquer cidade ou Região Administrativa de Brasília (ex: Ceilândia, Taguatinga, Campinas)..."
-                      aria-label="Pesquisar cidade brasileira"
-                      className="w-full min-h-[38px] pl-9 pr-8 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-sky-500"
-                    />
-                    {citySearchFilter && (
-                      <button
-                        type="button"
-                        onClick={() => setCitySearchFilter('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
-                        aria-label="Limpar pesquisa de cidade"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Quick Capital Presets */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {BRAZIL_STATE_CAPITALS.slice(0, 6).map((p) => (
-                      <button
-                        key={p.city}
-                        type="button"
-                        onClick={() => handleCityPreset(p)}
-                        className={`px-2 py-1 text-[11px] rounded-md border transition-colors ${
-                          city === p.city
-                            ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-semibold'
-                            : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                        }`}
-                      >
-                        {p.city} ({p.state})
-                      </button>
-                    ))}
+                  {/* Device location: required to publish; optional to place the pin */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleUseDeviceLocation(true)}
+                      disabled={locationStatus.kind === 'checking'}
+                      className="min-h-[40px] px-3 py-2 text-xs font-semibold rounded-lg border border-sky-500/60 text-sky-300 hover:bg-sky-500/10 disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      {locationStatus.kind === 'checking' ? 'Verificando localização…' : 'Colocar o pino onde estou agora'}
+                    </button>
+                    <p
+                      className={`text-[11px] leading-snug ${
+                        locationStatus.kind === 'error'
+                          ? 'text-red-300'
+                          : locationStatus.kind === 'ok'
+                          ? 'text-emerald-300'
+                          : 'text-zinc-400'
+                      }`}
+                    >
+                      {locationStatus.message ??
+                        `Ao publicar, pedimos a localização do seu dispositivo só para confirmar que você está no ${REGION_NAME}. Ela não é guardada.`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -971,10 +957,10 @@ export const NewProjectModal: React.FC<NewProjectModalProps> = ({
               </button>
               <button
                 type="submit"
-                disabled={Boolean(coverError)}
+                disabled={Boolean(coverError) || isSubmitting || locationStatus.kind === 'checking'}
                 className="min-h-[44px] px-6 py-2.5 bg-sky-400 hover:bg-sky-300 disabled:opacity-50 text-black font-bold text-xs sm:text-sm rounded-xl transition-all shadow-[0_0_20px_rgba(56,189,248,0.4)] active:scale-95"
               >
-                Publicar no Mapa Imediatamente
+                {isSubmitting ? 'Confirmando localização…' : 'Publicar no Mapa Imediatamente'}
               </button>
             </div>
           </div>

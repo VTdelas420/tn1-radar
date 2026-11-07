@@ -123,4 +123,6 @@ export interface MusicProject {
   stats: ProjectStats;
   supporters: Supporter[];
   reviews: ReprisedReview[];
+  /** When the device location check passed (DF + Entorno launch phase). */
+  regionVerifiedAt?: number;
 }

@@ -21,7 +21,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           className="text-lg font-extrabold tracking-tight text-white hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 min-h-[44px] flex items-center focus:outline-none"
           aria-label="Ir para o mapa principal"
         >
-          Substream
+          TN1 Radar
         </button>
 
         {/* Zone 2: 3 Concise Single-Line Navigation Links (Hick's Law: 3 core destinations) */}

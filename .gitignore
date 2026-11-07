@@ -10,3 +10,4 @@ coverage/
 emulator-data/
 *-debug.log
 .firebase/
+.claude/
