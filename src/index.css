@@ -120,3 +120,106 @@ input[type="range"] {
 .leaflet-container .leaflet-control-attribution a {
   color: var(--color-athos-300);
 }
+
+/*
+ * Animated map pin (see src/utils/pin.ts). Every pin moves the same way, each
+ * with its own phase so the map breathes instead of blinking in lockstep.
+ * Turned off by the prefers-reduced-motion rule above.
+ */
+.tn1-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+/* Triangle-shaped wave leaving the pin (the old "ping", now in the pin's shape) */
+.tn1-pin__wave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--pin-w);
+  height: var(--pin-h);
+  margin: calc(var(--pin-h) / -2) 0 0 calc(var(--pin-w) / -2);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: var(--color-athos-500);
+  opacity: 0;
+  pointer-events: none;
+  animation: tn1-wave 2.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+/* Soft light on the ground under the tip */
+.tn1-pin__shadow {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + var(--pin-h) / 2 + 2px);
+  width: calc(var(--pin-w) * 0.55);
+  height: 5px;
+  margin-left: calc(var(--pin-w) * -0.275);
+  border-radius: 50%;
+  background: rgba(62, 106, 230, 0.55);
+  filter: blur(2px);
+  pointer-events: none;
+  animation: tn1-shadow 3.4s ease-in-out infinite;
+}
+/* The pin floats gently; hover / touch lifts it */
+.tn1-pin__float {
+  animation: tn1-float 3.4s ease-in-out infinite;
+}
+.tn1-pin__lift {
+  transition: scale 180ms cubic-bezier(0.3, 1.6, 0.5, 1), translate 180ms ease-out;
+}
+.tn1-pin:hover .tn1-pin__lift {
+  scale: 1.14;
+  translate: 0 -4px;
+}
+.tn1-pin:active .tn1-pin__lift {
+  scale: 0.94;
+  translate: 0 0;
+  transition-duration: 80ms;
+}
+
+/* Selected: bigger, white wave, faster */
+.tn1-pin.is-selected .tn1-pin__lift {
+  scale: 1.2;
+}
+.tn1-pin.is-selected .tn1-pin__wave {
+  background: var(--color-azulejo);
+  animation-duration: 1.8s;
+}
+.tn1-pin.is-selected .tn1-pin__shadow {
+  background: rgba(242, 245, 250, 0.45);
+}
+
+/* Playing: the pin beats (about 120 bpm) and sends ipê-yellow waves */
+.tn1-pin.is-playing .tn1-pin__lift {
+  scale: 1.2;
+}
+.tn1-pin.is-playing .tn1-pin__float {
+  animation: tn1-beat 0.5s ease-out infinite;
+}
+.tn1-pin.is-playing .tn1-pin__wave {
+  background: var(--color-ipe);
+  animation-duration: 1s;
+}
+.tn1-pin.is-playing .tn1-pin__shadow {
+  background: rgba(242, 183, 5, 0.5);
+  animation: none;
+}
+
+@keyframes tn1-wave {
+  0% { transform: scale(1); opacity: 0.6; }
+  75%, 100% { transform: scale(2.3); opacity: 0; }
+}
+@keyframes tn1-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+@keyframes tn1-shadow {
+  0%, 100% { scale: 1; opacity: 1; }
+  50% { scale: 0.7; opacity: 0.55; }
+}
+@keyframes tn1-beat {
+  0% { transform: scale(1.09); }
+  35% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}

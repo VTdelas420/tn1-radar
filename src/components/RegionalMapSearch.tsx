@@ -24,7 +24,7 @@ import {
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
-import { pinImg } from '../utils/pin';
+import { pinMarkup } from '../utils/pin';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import {
   REGION_BOUNDS,
@@ -995,7 +995,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     // Orbital density rings (same size for every place)
     densityGroups.forEach((g) => {
       // Many releases here: three pins together (same for every place)
-      const tiles = `<div style="display:flex;gap:2px">${pinImg('idle', 22)}${pinImg('idle', 22)}</div><div style="display:flex;justify-content:center;margin-top:1px">${pinImg('idle', 22)}</div>`;
+      const tiles = `<div style="display:flex">${pinMarkup(`${g.key}-a`, 'idle', 22, 26)}${pinMarkup(`${g.key}-b`, 'idle', 22, 26)}</div><div style="display:flex;justify-content:center;margin-top:-4px">${pinMarkup(`${g.key}-c`, 'idle', 22, 26)}</div>`;
       const ringHtml = `
         <div class="relative cursor-pointer" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
           <div>${tiles}</div>
@@ -1044,10 +1044,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       // Far out, place names would pile up: show them for everyone only from zoom 10.5
       const showLabel = isSelected || currentZoom >= 10.5;
       const html = `
-        <div class="relative cursor-pointer" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-          <div style="transform: scale(${isSelected || isCurrentlyPlaying ? 1.18 : 1}); transition: transform 150ms;">
-            ${pinImg(tileState, 34)}
-          </div>
+        <div class="relative" style="width: 44px; height: 44px;">
+          ${pinMarkup(proj.id, tileState, 34, 44)}
           ${
             showLabel
               ? `<div class="absolute ${labelAnchorClass} px-1.5 py-0.5 bg-black/85 text-[12px] whitespace-nowrap pointer-events-none ${
