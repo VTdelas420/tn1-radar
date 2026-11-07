@@ -976,8 +976,6 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
     group.clearLayers();
 
-    const drawnHubOrigins = new Set<string>();
-
     // Orbital density rings (same size for every place)
     densityGroups.forEach((g) => {
       const ringHtml = `
@@ -1019,41 +1017,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       const isSelected = activePinProject?.id === proj.id;
       const isCurrentlyPlaying = currentProjectId === proj.id && isPlaying;
 
-      // If multiple projects share an area, draw a subtle origin hub ring & dashed electric-blue tether
-      if (pos.isDisplaced) {
-        const originKey = `${pos.originLat.toFixed(3)},${pos.originLng.toFixed(3)}`;
-        if (!drawnHubOrigins.has(originKey)) {
-          drawnHubOrigins.add(originKey);
-          const hubCircle = L.circleMarker([pos.originLat, pos.originLng], {
-            radius: 4.5,
-            color: '#38bdf8',
-            weight: 1.5,
-            fillColor: '#0284c7',
-            fillOpacity: 0.7,
-            interactive: false,
-          });
-          hubCircle.addTo(group);
-        }
-
-        const tether = L.polyline(
-          [
-            [pos.originLat, pos.originLng],
-            [pos.lat, pos.lng],
-          ],
-          {
-            color: isSelected ? '#7dd3fc' : '#38bdf8',
-            weight: isSelected ? 1.6 : 1.0,
-            opacity: isSelected ? 0.9 : 0.48,
-            dashArray: '3, 4',
-            interactive: false,
-          }
-        );
-        tether.addTo(group);
-      }
-
-      const labelText = pos.isDisplaced
-        ? `${proj.city} · ${proj.title.length > 14 ? proj.title.slice(0, 14) + '…' : proj.title}`
-        : proj.city;
+      // Every pin shows only its place name (same weight for everyone)
+      const labelText = proj.city;
 
       const labelAnchorClass =
         currentZoom < 5.5 && !pos.isDisplaced
