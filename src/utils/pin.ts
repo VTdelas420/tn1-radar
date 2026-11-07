@@ -5,7 +5,7 @@
  *   - 'music' (releases): round light, circle outline
  *   - 'event' (events in the city): inverted-triangle light and outline
  * Every pin of a kind has the same size and motion (equal weight).
- * Selected: whiter light. Playing: ipê-yellow light that beats.
+ * Selected: whiter light. Playing: same blue, bigger, with a strong pulse.
  * Motion lives in index.css (.tn1-pin).
  */
 
@@ -19,7 +19,8 @@ const WAVE_S = { idle: 2.8, selected: 1.8, playing: 1 } as const;
 const LIGHT: Record<PinState, [number[], number[]]> = {
   idle: [[190, 208, 255], [52, 98, 228]],
   selected: [[255, 255, 255], [140, 170, 255]],
-  playing: [[255, 240, 180], [242, 183, 5]],
+  // Playing keeps the same blue: it stands out by size and a stronger pulse
+  playing: [[190, 208, 255], [52, 98, 228]],
 };
 
 // The light is this many times wider than the pin

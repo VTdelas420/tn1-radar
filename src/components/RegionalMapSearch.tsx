@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { MusicProject } from '../types/music';
-import { directionsUrl, eventWhen, isEventHappening, type CityEvent } from '../types/events';
+import { directionsUrl, eventSchedule, isEventHappening, isEventVisible, nextEditionText, type CityEvent } from '../types/events';
 import {
   MapPin,
   Search,
@@ -81,6 +81,7 @@ interface RegionalMapSearchProps {
   /** Events happening in the city (inverted-triangle pins) */
   events?: CityEvent[];
   onOpenEvent?: (event: CityEvent) => void;
+  onOpenArtist?: (project: MusicProject) => void;
   focusedEventId?: string | null;
   onClearFocusedEvent?: () => void;
 }
@@ -168,6 +169,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   onClearFocusedProject,
   events = [],
   onOpenEvent,
+  onOpenArtist,
   focusedEventId,
   onClearFocusedEvent,
 }) => {
@@ -246,7 +248,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     const q = searchQuery.trim().toLowerCase();
     const now = Date.now();
     return events.filter((ev) => {
-      if (ev.endsAt <= now) return false;
+      if (!isEventVisible(ev, now)) return false;
       if (!isInRegion(ev.coordinates.lat, ev.coordinates.lng, 15)) return false;
       if (selectedStateFilter === 'ENTORNO') {
         if ((ev.state || '').toUpperCase() !== 'GO') return false;
@@ -1641,9 +1643,12 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                   {activePinProject.title}
                 </h4>
 
-                <div className="text-xs text-zinc-400 truncate mt-0.5">
+                <button
+                  onClick={() => onOpenArtist?.(activePinProject)}
+                  className="block max-w-full text-xs text-zinc-300 hover:text-athos-300 truncate mt-0.5 text-left underline decoration-zinc-600 underline-offset-2"
+                >
                   {activePinProject.artistName}
-                </div>
+                </button>
 
                 {/* Only Community Evaluation Rating, Tracks & Access Mode */}
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1.5 md:mt-2 text-xs tabular-nums">
@@ -1701,7 +1706,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
               <div className="flex flex-1 min-w-0 items-center gap-1.5 text-xs text-zinc-400">
                 <CalendarDays className="w-3.5 h-3.5 text-athos-400 shrink-0" />
                 <span className="text-zinc-100 font-semibold truncate">
-                  {isEventHappening(activePinEvent) ? 'Acontecendo agora' : eventWhen(activePinEvent)}
+                  {isEventHappening(activePinEvent) ? 'Acontecendo agora' : eventSchedule(activePinEvent)}
                 </span>
               </div>
               <button
@@ -1743,6 +1748,9 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1.5 md:mt-2 text-xs">
                   <span className="text-zinc-300">{activePinEvent.genre}</span>
+                  {nextEditionText(activePinEvent) && !isEventHappening(activePinEvent) && (
+                    <span className="text-zinc-300">{nextEditionText(activePinEvent)}</span>
+                  )}
                   <span className={activePinEvent.entry === 'free' ? 'text-athos-400 font-bold' : 'text-ipe font-bold'}>
                     {activePinEvent.entry === 'free' ? 'Entrada gratuita' : activePinEvent.priceText || 'Entrada paga'}
                   </span>

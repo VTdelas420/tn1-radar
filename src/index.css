@@ -135,7 +135,7 @@ input[type="range"] {
   cursor: pointer;
 }
 .tn1-pin.is-selected { --glow: 147, 175, 255; }
-.tn1-pin.is-playing { --glow: 242, 183, 5; }
+
 
 /* Ring of light leaving the pin (the old "ping") */
 .tn1-pin__wave {
@@ -165,8 +165,8 @@ input[type="range"] {
 }
 .tn1-pin:hover .tn1-pin__lift { scale: 1.14; translate: 0 -3px; }
 .tn1-pin:active .tn1-pin__lift { scale: 0.94; translate: 0 0; transition-duration: 80ms; }
-.tn1-pin.is-selected .tn1-pin__lift,
-.tn1-pin.is-playing .tn1-pin__lift { scale: 1.2; }
+.tn1-pin.is-selected .tn1-pin__lift { scale: 1.2; }
+.tn1-pin.is-playing .tn1-pin__lift { scale: 1.45; }
 
 /* The light: a 28×28 gradient enlarged without smoothing, so its edges show square steps */
 .tn1-pin__light {
@@ -220,7 +220,7 @@ input[type="range"] {
 
 /* Playing: the light beats (about 120 bpm) */
 .tn1-pin.is-playing .tn1-pin__float { animation: tn1-beat 0.5s ease-out infinite; }
-.tn1-pin.is-playing .tn1-pin__light { animation: tn1-breathe 0.5s ease-out infinite; }
+.tn1-pin.is-playing .tn1-pin__light { animation: tn1-pulse 0.5s ease-out infinite; }
 
 /* What a pin casts on the map (pinGroundMarkup), in a pane under every pin */
 .tn1-ground {
@@ -269,6 +269,11 @@ input[type="range"] {
 @keyframes tn1-breathe {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 1; }
+}
+/* Playing: the light flares on every beat */
+@keyframes tn1-pulse {
+  0% { opacity: 1; transform: scale(1.3); filter: brightness(1.5); }
+  100% { opacity: 0.75; transform: scale(1); filter: brightness(1); }
 }
 @keyframes tn1-beat {
   0% { transform: scale(1.08); }

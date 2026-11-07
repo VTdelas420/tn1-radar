@@ -54,6 +54,7 @@ interface UserProfileViewProps {
   /** Real accounts: payments are not live yet, so the simulated balance/payout tab is hidden. */
   hideEarnings?: boolean;
   onEditProfile?: () => void;
+  onOpenMyPage?: () => void;
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
@@ -73,6 +74,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
   onOpenNewProject,
   hideEarnings = false,
   onEditProfile,
+  onOpenMyPage,
 }) => {
   type ProfileSubTab = 'library' | 'reviews' | 'saved' | 'my_projects' | 'earnings';
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('library');
@@ -166,6 +168,14 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
               className="min-h-[40px] px-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 font-semibold hover:border-athos-500"
             >
               Editar perfil
+            </button>
+          )}
+          {onOpenMyPage && (
+            <button
+              onClick={onOpenMyPage}
+              className="min-h-[40px] px-3.5 rounded-xl bg-athos-600 hover:bg-athos-500 text-xs text-white font-semibold"
+            >
+              Minha página pública
             </button>
           )}
           {user.favoriteGenres.map((genre) => (

@@ -11,10 +11,12 @@ const isWebLink = (url?: string): url is string => !!url && (url.startsWith('htt
 interface EventDetailModalProps {
   event: CityEvent;
   onClose: () => void;
+  /** Opens the organiser's public page */
+  onOpenOrganizer?: () => void;
 }
 
 /** Everything about one event: flyer, when, where, entry, who plays; directions and report. */
-export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose }) => {
+export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClose, onOpenOrganizer }) => {
   const { requireAccount } = useAuth();
   const [reportOpen, setReportOpen] = useState(false);
   const [reason, setReason] = useState('');
@@ -71,7 +73,19 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
               {happening ? 'Acontecendo agora' : event.genre}
             </p>
             <h2 className="text-xl font-bold text-white mt-1">{event.title}</h2>
-            <p className="text-sm text-zinc-400 mt-0.5">Organização: {event.organizerName}</p>
+            <p className="text-sm text-zinc-400 mt-0.5">
+              Organização:{' '}
+              {onOpenOrganizer ? (
+                <button
+                  onClick={onOpenOrganizer}
+                  className="text-zinc-200 underline decoration-athos-500/60 underline-offset-4 hover:text-athos-300"
+                >
+                  {event.organizerName}
+                </button>
+              ) : (
+                event.organizerName
+              )}
+            </p>
           </div>
 
           <ul className="space-y-2.5 text-sm text-zinc-200">

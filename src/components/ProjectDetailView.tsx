@@ -23,6 +23,8 @@ import { formatBrl, calculateInstallments } from '../utils/monetization';
 
 interface ProjectDetailViewProps {
   project: MusicProject;
+  /** Opens the artist's public page */
+  onOpenArtist?: () => void;
   isPlaying: boolean;
   currentTrackIndex: number;
   currentProjectId?: string;
@@ -49,6 +51,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   onOpenCheckout,
   inLibrary,
   onToggleLibrary,
+  onOpenArtist,
   onAddReview,
   onToggleSave,
 }) => {
@@ -260,7 +263,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
             </h1>
 
             <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400 mt-2 tabular-nums">
-              <span className="text-zinc-200 font-semibold">{project.artistName}</span>
+              {onOpenArtist ? (
+                <button
+                  onClick={onOpenArtist}
+                  className="min-h-[32px] text-zinc-100 font-semibold underline decoration-athos-500/60 underline-offset-4 hover:text-athos-300"
+                >
+                  {project.artistName}
+                </button>
+              ) : (
+                <span className="text-zinc-200 font-semibold">{project.artistName}</span>
+              )}
               <span className="flex items-center gap-1 text-amber-400 font-bold">
                 <Star className="w-4 h-4 fill-current" />
                 {project.stats.averageRating.toFixed(1)} nas avaliações

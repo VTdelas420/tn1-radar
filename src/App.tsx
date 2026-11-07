@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { isDemoMode, isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
-import { loadCatalog, loadEvents, publishEvent, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
+import { deleteEvent, loadCatalog, loadEvents, publishEvent, publishProject, saveReview, updateEvent, type ReleaseFiles } from './lib/persistence';
+import { ArtistPageView, type ArtistRef } from './components/ArtistPageView';
 import { useAuth } from './lib/auth';
 import { AccountModals } from './components/AccountModals';
 import { ModerationPanel } from './components/ModerationPanel';
@@ -33,6 +34,31 @@ export default function App() {
   const [events, setEvents] = useState<CityEvent[]>(() => INITIAL_EVENTS.filter((e) => e.endsAt > Date.now()));
   const [selectedEvent, setSelectedEvent] = useState<CityEvent | null>(null);
   const [isNewEventOpen, setIsNewEventOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CityEvent | null>(null);
+  // Public page of an artist / organiser (releases, events, bio, Pix)
+  const [selectedArtist, setSelectedArtist] = useState<ArtistRef | null>(null);
+  const artistOfProject = (p: MusicProject): ArtistRef => ({
+    uid: (p as MusicProject & { ownerUid?: string }).ownerUid,
+    name: p.artistName,
+  });
+  const openArtist = (ref: ArtistRef) => {
+    setSelectedProject(null);
+    setSelectedEvent(null);
+    setSelectedArtist(ref);
+    window.scrollTo({ top: 0 });
+  };
+  const removeEvent = (ev: CityEvent) => {
+    setEvents((prev) => prev.filter((e) => e.id !== ev.id));
+    if (isFirebaseEnabled) {
+      deleteEvent(ev.id)
+        .then(() => setSyncStatus({ kind: 'saved', message: 'Evento apagado.' }))
+        .catch((err) => {
+          console.error('Falha ao apagar evento:', err);
+          setEvents((prev) => [ev, ...prev]);
+          setSyncStatus({ kind: 'error', message: 'Não deu para apagar o evento. Tente de novo.' });
+        });
+    }
+  };
   const [focusedEventId, setFocusedEventId] = useState<string | null>(null);
   const openNewEvent = () => account.requireAccount('event', () => setIsNewEventOpen(true));
 
@@ -461,6 +487,7 @@ export default function App() {
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setSelectedProject(null);
+          setSelectedArtist(null);
         }}
         onOpenNewProject={openNewProject}
         onOpenNewEvent={openNewEvent}
@@ -485,6 +512,25 @@ export default function App() {
             onToggleSave={handleToggleSaveProject}
             inLibrary={currentUser.libraryProjectIds?.includes(selectedProject.id)}
             onToggleLibrary={handleToggleLibrary}
+            onOpenArtist={() => openArtist(artistOfProject(selectedProject))}
+          />
+        ) : selectedArtist ? (
+          <ArtistPageView
+            artist={selectedArtist}
+            projects={projects}
+            events={events}
+            viewerUid={accountUid}
+            currentProjectId={currentProject?.id}
+            isPlaying={isPlaying}
+            onBack={() => setSelectedArtist(null)}
+            onSelectProject={(proj) => setSelectedProject(proj)}
+            onPlayProject={(proj) => handlePlayProject(proj, 0)}
+            onTogglePlay={handleTogglePlay}
+            onOpenEvent={(ev) => setSelectedEvent(ev)}
+            onSupport={(proj) => setCheckoutProject(proj)}
+            onEditEvent={(ev) => setEditingEvent(ev)}
+            onDeleteEvent={removeEvent}
+            onEditProfile={account.enabled ? () => account.openProfileSetup(false) : undefined}
           />
         ) : activeTab === 'map' ? (
           /* THE MAP IS THE PRIMARY HOME PAGE */
@@ -498,6 +544,7 @@ export default function App() {
             onClearFocusedProject={() => setFocusedMapProjectId(null)}
             events={events}
             onOpenEvent={(ev) => setSelectedEvent(ev)}
+            onOpenArtist={(proj) => openArtist(artistOfProject(proj))}
             focusedEventId={focusedEventId}
             onClearFocusedEvent={() => setFocusedEventId(null)}
           />
@@ -530,6 +577,7 @@ export default function App() {
           <UserProfileView
             hideEarnings
             onEditProfile={account.enabled ? () => account.openProfileSetup(false) : undefined}
+            onOpenMyPage={account.profile ? () => openArtist({ uid: account.profile!.uid, name: account.profile!.name }) : undefined}
             user={currentUser}
             allProjects={projects}
             currentProjectId={currentProject?.id}
@@ -629,16 +677,45 @@ export default function App() {
       <AccountModals />
       {isModerationOpen && <ModerationPanel onClose={() => setIsModerationOpen(false)} />}
 
-      {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          onOpenOrganizer={() => openArtist({ uid: selectedEvent.ownerUid, name: selectedEvent.organizerName })}
+        />
+      )}
 
-      {isNewEventOpen && (
+      {(isNewEventOpen || editingEvent) && (
         <NewEventModal
           organizer={account.profile}
-          onClose={() => setIsNewEventOpen(false)}
-          onSaveEvent={(ev, flyer) => {
+          initial={editingEvent}
+          onClose={() => {
             setIsNewEventOpen(false);
-            setEvents((prev) => [ev, ...prev]);
+            setEditingEvent(null);
+          }}
+          onSaveEvent={(ev, flyer) => {
+            if (editingEvent) {
+              // Edit: replace in place and save, staying on the current page
+              setEditingEvent(null);
+              setEvents((prev) => prev.map((e) => (e.id === ev.id ? { ...ev, ownerUid: e.ownerUid } : e)));
+              if (isFirebaseEnabled) {
+                setSyncStatus({ kind: 'saving', message: 'Salvando o evento…' });
+                updateEvent(ev, flyer)
+                  .then((stored) => {
+                    setEvents((prev) => prev.map((e) => (e.id === stored.id ? stored : e)));
+                    setSyncStatus({ kind: 'saved', message: 'Evento atualizado.' });
+                  })
+                  .catch((err) => {
+                    console.error('Falha ao atualizar evento:', err);
+                    setSyncStatus({ kind: 'error', message: 'Não deu para salvar as alterações. Tente de novo.' });
+                  });
+              }
+              return;
+            }
+            setIsNewEventOpen(false);
+            setEvents((prev) => [{ ...ev, ownerUid: account.profile?.uid }, ...prev]);
             setSelectedProject(null);
+            setSelectedArtist(null);
             setActiveTab('map');
             setFocusedEventId(ev.id);
             if (isFirebaseEnabled) {

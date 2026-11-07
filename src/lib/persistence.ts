@@ -2,7 +2,8 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc 
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage, ensureSignedIn, isFirebaseEnabled } from './firebase';
 import type { MusicProject, ReprisedReview } from '../types/music';
-import { isEventVisible, type CityEvent } from '../types/events';
+import { isEventVisible, nextStart, type CityEvent } from '../types/events';
+import type { AccountProfile } from './auth';
 
 /** Files picked in the "Novo Lançamento" modal, uploaded when the release is saved. */
 export interface ReleaseFiles {
@@ -147,7 +148,40 @@ export async function loadEvents(seed: CityEvent[]): Promise<CityEvent[]> {
   const ids = new Set(saved.map((e) => e.id));
   return [...saved, ...seed.filter((e) => !ids.has(e.id))]
     .filter((e) => isEventVisible(e, now))
-    .sort((a, b) => a.startsAt - b.startsAt);
+    .sort((a, b) => nextStart(a, now) - nextStart(b, now));
+}
+
+/** Changes an event the signed-in account owns (keeps its owner and creation time). */
+export async function updateEvent(event: CityEvent, flyer?: File): Promise<CityEvent> {
+  if (!isFirebaseEnabled) return event;
+  const uid = await ensureSignedIn();
+  if (!uid) throw new Error('Entre na sua conta para continuar.');
+  const flyerUrl = flyer
+    ? await uploadFile(`events/${event.id}/flyer-${Date.now()}-${safeName(flyer.name)}`, flyer)
+    : event.flyerUrl?.startsWith('blob:')
+      ? undefined
+      : event.flyerUrl;
+  const stored: CityEvent = { ...event, flyerUrl, ownerUid: uid, createdAt: event.createdAt ?? Date.now() };
+  await setDoc(doc(db!, EVENTS, event.id), stored);
+  return stored;
+}
+
+export async function deleteEvent(eventId: string): Promise<void> {
+  if (!isFirebaseEnabled) return;
+  await deleteDoc(doc(db!, EVENTS, eventId));
+}
+
+// ---------- Public profiles ----------
+
+/** An account's public profile (users/{uid}), or null when there is none. */
+export async function fetchPublicProfile(uid: string): Promise<AccountProfile | null> {
+  if (!isFirebaseEnabled) return null;
+  try {
+    const snap = await getDoc(doc(db!, 'users', uid));
+    return snap.exists() ? (snap.data() as AccountProfile) : null;
+  } catch {
+    return null;
+  }
 }
 
 // ---------- Moderation ----------

@@ -3,12 +3,14 @@ import { X, ImagePlus, MapPin, Trash2 } from 'lucide-react';
 import { PinDropMiniMap } from './PinDropMiniMap';
 import { REGION_LOCATIONS, REGION_NAME, findRegionLocation, isInRegion } from '../config/region';
 import type { AccountProfile } from '../lib/auth';
-import type { CityEvent } from '../types/events';
+import { isEventVisible, recurrenceText, type CityEvent, type EventRecurrence } from '../types/events';
 
 interface NewEventModalProps {
   organizer: AccountProfile | null;
   onClose: () => void;
   onSaveEvent: (event: CityEvent, flyer?: File) => void;
+  /** An event to edit; without it the form creates a new one */
+  initial?: CityEvent | null;
 }
 
 const GENRES = ['Rap', 'Batalha de MCs', 'Baile Funk', 'Trap', 'Hip-hop', 'Sarau', 'Show', 'Festa', 'Roda de samba', 'Outro'];
@@ -25,6 +27,14 @@ function todayIso() {
   return d.toISOString().slice(0, 10);
 }
 
+/** "YYYY-MM-DD" and "HH:MM" of a timestamp, in local time */
+function localParts(ms: number) {
+  const d = new Date(ms);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  const iso = d.toISOString();
+  return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
+}
+
 function isHttpUrl(text: string) {
   try {
     const u = new URL(text);
@@ -35,27 +45,33 @@ function isHttpUrl(text: string) {
 }
 
 /** Form to put an event happening in the city on the map (a triangle pin). */
-export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose, onSaveEvent }) => {
+export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose, onSaveEvent, initial }) => {
   const startPlace =
-    (organizer?.city && findRegionLocation(organizer.city, organizer.state)) || REGION_LOCATIONS[0];
+    (initial && findRegionLocation(initial.city, initial.state)) ||
+    (organizer?.city && findRegionLocation(organizer.city, organizer.state)) ||
+    REGION_LOCATIONS[0];
+  const start = initial ? localParts(initial.startsAt) : null;
+  const end = initial ? localParts(initial.endsAt) : null;
 
-  const [title, setTitle] = useState('');
-  const [genre, setGenre] = useState('Rap');
-  const [date, setDate] = useState(todayIso());
-  const [startTime, setStartTime] = useState('20:00');
-  const [endTime, setEndTime] = useState('23:00');
-  const [venueName, setVenueName] = useState('');
-  const [address, setAddress] = useState('');
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [genre, setGenre] = useState(initial?.genre ?? 'Rap');
+  const [date, setDate] = useState(start?.date ?? todayIso());
+  const [startTime, setStartTime] = useState(start?.time ?? '20:00');
+  const [endTime, setEndTime] = useState(end?.time ?? '23:00');
+  const [venueName, setVenueName] = useState(initial?.venueName ?? '');
+  const [address, setAddress] = useState(initial?.address ?? '');
   const [placeKey, setPlaceKey] = useState(`${startPlace.n}|${startPlace.uf}`);
-  const [coords, setCoords] = useState({ lat: startPlace.lat, lng: startPlace.lng });
-  const [entry, setEntry] = useState<'free' | 'paid'>('free');
-  const [priceText, setPriceText] = useState('');
-  const [ticketUrl, setTicketUrl] = useState('');
-  const [lineup, setLineup] = useState('');
-  const [description, setDescription] = useState('');
-  const [organizerName, setOrganizerName] = useState(organizer?.name ?? '');
+  const [coords, setCoords] = useState(initial?.coordinates ?? { lat: startPlace.lat, lng: startPlace.lng });
+  const [entry, setEntry] = useState<'free' | 'paid'>(initial?.entry ?? 'free');
+  const [priceText, setPriceText] = useState(initial?.priceText ?? '');
+  const [ticketUrl, setTicketUrl] = useState(initial?.ticketUrl ?? '');
+  const [lineup, setLineup] = useState(initial?.lineup ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [organizerName, setOrganizerName] = useState(initial?.organizerName ?? organizer?.name ?? '');
+  const [recurrence, setRecurrence] = useState<EventRecurrence>(initial?.recurrence ?? 'none');
+  const [repeatUntil, setRepeatUntil] = useState(initial?.repeatUntil ? localParts(initial.repeatUntil).date : '');
   const [flyer, setFlyer] = useState<File | null>(null);
-  const [flyerPreview, setFlyerPreview] = useState<string | null>(null);
+  const [flyerPreview, setFlyerPreview] = useState<string | null>(initial?.flyerUrl ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const [placeName, placeUf] = placeKey.split('|');
@@ -108,7 +124,11 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
     if (title.trim().length < 3) return setError('Dê um nome ao evento.');
     if (venueName.trim().length < 2) return setError('Diga onde vai ser (o nome do lugar).');
     if (!Number.isFinite(times.startsAt) || !Number.isFinite(times.endsAt)) return setError('Confira o dia e os horários.');
-    if (times.endsAt <= Date.now()) return setError('Esse horário já passou. Confira o dia e o horário de término.');
+    const repeating = recurrence !== 'none';
+    const untilMs = repeating && repeatUntil ? new Date(`${repeatUntil}T23:59:59`).getTime() : undefined;
+    if (untilMs !== undefined && untilMs < times.startsAt) return setError('A data final da repetição tem que ser depois do primeiro dia.');
+    if (!isEventVisible({ startsAt: times.startsAt, endsAt: times.endsAt, recurrence, repeatUntil: untilMs } as CityEvent))
+      return setError(repeating ? 'Não sobra nenhuma data depois de hoje. Confira o dia e o "até quando".' : 'Esse horário já passou. Confira o dia e o horário de término.');
     if (times.endsAt - times.startsAt > 3 * 24 * HOUR) return setError('Um evento pode durar até 3 dias.');
     if (!isInRegion(coords.lat, coords.lng)) return setError(`O evento precisa ser no ${REGION_NAME}.`);
     // "QNM 12" is a block, fine; "nº 45" or ", 45" is a house number, not shown
@@ -119,13 +139,16 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
     if (!organizerName.trim()) return setError('Diga quem organiza.');
 
     const event: CityEvent = {
-      id: `evt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      id: initial?.id ?? `evt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: initial?.createdAt,
       title: title.trim().slice(0, 120),
       genre,
       description: description.trim().slice(0, 2000),
       lineup: lineup.trim().slice(0, 300) || undefined,
       startsAt: times.startsAt,
       endsAt: times.endsAt,
+      recurrence: repeating ? recurrence : undefined,
+      repeatUntil: untilMs,
       venueName: venueName.trim().slice(0, 120),
       address: address.trim().slice(0, 160) || undefined,
       city: placeName,
@@ -145,12 +168,12 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Novo evento"
+        aria-label={initial ? 'Editar evento' : 'Novo evento'}
         className="relative w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden my-auto"
       >
         <div className="p-4 sm:p-5 border-b border-zinc-800 bg-black/60 flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <h3 className="text-base font-bold text-white">Novo evento no mapa</h3>
+            <h3 className="text-base font-bold text-white">{initial ? 'Editar evento' : 'Novo evento no mapa'}</h3>
             <p className="text-xs text-zinc-400">
               Batalha, baile, show ou sarau acontecendo no {REGION_NAME}. Ele aparece como um triângulo até acabar.
             </p>
@@ -189,7 +212,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="col-span-2 sm:col-span-1">
                 <label htmlFor="ev-date" className={labelClass}>Dia *</label>
-                <input id="ev-date" type="date" className={inputClass} value={date} min={todayIso()} onChange={(e) => setDate(e.target.value)} />
+                <input id="ev-date" type="date" className={inputClass} value={date} min={initial ? undefined : todayIso()} onChange={(e) => setDate(e.target.value)} />
               </div>
               <div>
                 <label htmlFor="ev-start" className={labelClass}>Começa *</label>
@@ -201,6 +224,34 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
               </div>
             </div>
             {endsNextDay && <p className="-mt-3 text-[11px] text-zinc-400">Termina no dia seguinte.</p>}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="ev-repeat" className={labelClass}>Repete?</label>
+                <select
+                  id="ev-repeat"
+                  className={inputClass}
+                  value={recurrence}
+                  onChange={(e) => setRecurrence(e.target.value as EventRecurrence)}
+                >
+                  <option value="none">Não, é só nesse dia</option>
+                  <option value="weekly">Toda semana</option>
+                  <option value="biweekly">A cada 15 dias</option>
+                </select>
+              </div>
+              {recurrence !== 'none' && (
+                <div>
+                  <label htmlFor="ev-until" className={labelClass}>Até quando (opcional)</label>
+                  <input id="ev-until" type="date" className={inputClass} value={repeatUntil} min={date} onChange={(e) => setRepeatUntil(e.target.value)} />
+                </div>
+              )}
+            </div>
+            {recurrence !== 'none' && Number.isFinite(times.startsAt) && (
+              <p className="-mt-3 text-[11px] text-zinc-400">
+                {recurrenceText({ startsAt: times.startsAt, recurrence } as CityEvent)}
+                {repeatUntil ? ', até a data escolhida.' : ', sem data para acabar. Você pode apagar quando parar.'}
+              </p>
+            )}
 
             <div className="space-y-4 pt-4 border-t border-zinc-800">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -322,7 +373,7 @@ export const NewEventModal: React.FC<NewEventModalProps> = ({ organizer, onClose
                 Cancelar
               </button>
               <button type="submit" className="flex-1 sm:flex-none min-h-[44px] px-4 sm:px-6 py-2.5 bg-athos-600 hover:bg-athos-500 text-white font-bold text-xs sm:text-sm rounded-xl active:scale-95">
-                Publicar evento
+                {initial ? 'Salvar alterações' : 'Publicar evento'}
               </button>
             </div>
           </div>

@@ -63,6 +63,9 @@ service cloud.firestore {
         // at most 3 days long, starting within a year
         && d.endsAt - d.startsAt <= 3 * 24 * 60 * 60 * 1000
         && d.startsAt < request.time.toMillis() + 366 * 24 * 60 * 60 * 1000
+        // repeating events: every week or every two weeks, optionally until a date
+        && (!('recurrence' in d) || d.recurrence in ['none', 'weekly', 'biweekly'])
+        && (!('repeatUntil' in d) || (d.repeatUntil is number && d.repeatUntil >= d.startsAt))
         && webLinkOrAbsent(d, 'ticketUrl')
         && webLinkOrAbsent(d, 'flyerUrl')
         && inRegion(d);
@@ -136,7 +139,9 @@ service cloud.firestore {
       allow create: if hasProfile()
         && request.resource.data.ownerUid == request.auth.uid
         && !('hidden' in request.resource.data)
-        && request.resource.data.endsAt > request.time.toMillis()
+        // a one-off event cannot be in the past; a repeating one has more editions ahead
+        && (request.resource.data.endsAt > request.time.toMillis()
+          || request.resource.data.get('recurrence', 'none') in ['weekly', 'biweekly'])
         && validEvent(request.resource.data);
       allow update: if (ownerEdit() && validEvent(request.resource.data))
         || (isAdmin() && onlyHiding());
