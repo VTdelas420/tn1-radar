@@ -1,35 +1,22 @@
 /**
- * TN1 Radar map pin: the blue triangle with the white eye (public/pins/triangulo.webp).
- * Every release uses the same pin, size and motion (equal weight). It floats over a
- * soft light on the ground and sends triangle-shaped waves; hover/touch lifts it.
- * Selected: white outline and wave. Playing: beats and sends ipê-yellow waves.
- * Animations live in index.css (.tn1-pin).
+ * TN1 Radar map pin, drawn from the TN1 mark: a circle, an inverted triangle
+ * inscribed in it, and a circle inside the triangle, with light rising from the
+ * centre. Every release uses the same pin, size and motion (equal weight).
+ * Selected: brighter white light. Playing: beats with ipê-yellow light.
+ * Motion and colours live in index.css (.tn1-pin).
  */
-
-export const PIN_SRC = '/pins/triangulo.webp';
-// Image is 128 × 111 px
-const RATIO = 111 / 128;
-const FLOAT_S = 3.4;
-const WAVE_S = 2.8;
 
 export type PinState = 'idle' | 'selected' | 'playing';
 
-const OUTLINE: Record<PinState, string> = {
-  idle: 'drop-shadow(0 1px 1px rgba(0,0,0,0.8))',
-  selected: outline('#f2f5fa'),
-  playing: outline('#f2b705'),
-};
+const FLOAT_S = 3.4;
+const WAVE_S = { idle: 2.8, selected: 1.8, playing: 1 } as const;
 
-function outline(color: string): string {
-  return [
-    [1.5, 0],
-    [-1.5, 0],
-    [0, 1.5],
-    [0, -1.5],
-  ]
-    .map(([x, y]) => `drop-shadow(${x}px ${y}px 0 ${color})`)
-    .join(' ');
-}
+// Outer circle r=46 around (50,50); the inscribed inverted triangle; its incircle (r = R/2)
+const MARK = `<svg viewBox="0 0 100 100" aria-hidden="true" class="tn1-pin__mark">
+  <circle cx="50" cy="50" r="46"/>
+  <path d="M10.16 27H89.84L50 96Z"/>
+  <circle cx="50" cy="50" r="23"/>
+</svg>`;
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -51,23 +38,19 @@ function phase(seed: string, period: number): string {
   return `-${((t % 1) * period).toFixed(2)}s`;
 }
 
-/** Static <img> of the pin, `width` px wide. */
-export function pinImg(state: PinState = 'idle', width = 34): string {
-  const height = Math.round(width * RATIO);
-  return `<img src="${PIN_SRC}" width="${width}" height="${height}" alt="" draggable="false" style="display:block;width:${width}px !important;height:${height}px !important;max-width:none;filter:${OUTLINE[state]};pointer-events:none">`;
-}
-
-/** Animated pin inside a `box` px square (the tap area). */
-export function pinMarkup(seed: string, state: PinState = 'idle', width = 34, box = 44): string {
-  const height = Math.round(width * RATIO);
+/** Animated pin, `size` px across, centred in a `box` px square (the tap area). */
+export function pinMarkup(seed: string, state: PinState = 'idle', size = 36, box = 44): string {
   const stateClass = state === 'idle' ? '' : ` is-${state}`;
   const floatDelay = phase(seed, FLOAT_S);
-  const waveDelay = phase(`${seed}~wave`, state === 'playing' ? 1 : state === 'selected' ? 1.8 : WAVE_S);
-  return `<div class="tn1-pin${stateClass}" style="width:${box}px;height:${box}px;--pin-w:${width}px;--pin-h:${height}px">
+  const waveDelay = phase(`${seed}~wave`, WAVE_S[state]);
+  return `<div class="tn1-pin${stateClass}" style="width:${box}px;height:${box}px;--pin:${size}px">
     <div class="tn1-pin__wave" style="animation-delay:${waveDelay}"></div>
-    <div class="tn1-pin__shadow" style="animation-delay:${floatDelay}"></div>
     <div class="tn1-pin__float" style="animation-delay:${floatDelay}">
-      <div class="tn1-pin__lift">${pinImg(state, width)}</div>
+      <div class="tn1-pin__lift">
+        <div class="tn1-pin__halo" style="animation-delay:${floatDelay}"></div>
+        <div class="tn1-pin__core"></div>
+        ${MARK}
+      </div>
     </div>
   </div>`;
 }
