@@ -2,6 +2,7 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc 
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage, ensureSignedIn, isFirebaseEnabled } from './firebase';
 import type { MusicProject, ReprisedReview } from '../types/music';
+import { isEventVisible, type CityEvent } from '../types/events';
 
 /** Files picked in the "Novo Lançamento" modal, uploaded when the release is saved. */
 export interface ReleaseFiles {
@@ -14,6 +15,7 @@ const PROJECTS = 'projects';
 const REVIEWS = 'reviews';
 const REPORTS = 'reports';
 const ADMINS = 'admins';
+const EVENTS = 'events';
 
 function safeName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80);
@@ -116,9 +118,41 @@ export async function loadCatalog(seed: MusicProject[]): Promise<MusicProject[]>
   return all.map((p) => withReviews({ ...p, reviews: p.reviews ?? [] }, reviewsByProject.get(p.id) ?? []));
 }
 
+// ---------- Events ----------
+
+/** Uploads the flyer (if any) and writes the event. Returns it with the permanent flyer URL. */
+export async function publishEvent(event: CityEvent, flyer?: File): Promise<CityEvent> {
+  if (!isFirebaseEnabled) return event;
+  const uid = await ensureSignedIn();
+  if (!uid) throw new Error('Entre na sua conta para continuar.');
+  const flyerUrl = flyer
+    ? await uploadFile(`events/${event.id}/flyer-${safeName(flyer.name)}`, flyer)
+    : event.flyerUrl?.startsWith('blob:')
+      ? undefined
+      : event.flyerUrl;
+  const stored: CityEvent = { ...event, flyerUrl, ownerUid: uid, createdAt: Date.now() };
+  await setDoc(doc(db!, EVENTS, event.id), stored);
+  return stored;
+}
+
+/** Saved events that have not ended yet, merged with the demo events, soonest first. */
+export async function loadEvents(seed: CityEvent[]): Promise<CityEvent[]> {
+  const now = Date.now();
+  if (!isFirebaseEnabled) return seed.filter((e) => isEventVisible(e, now));
+  await ensureSignedIn();
+  const snap = await getDocs(collection(db!, EVENTS));
+  const saved = snap.docs
+    .map((d) => d.data() as CityEvent & { hidden?: boolean })
+    .filter((e) => !e.hidden);
+  const ids = new Set(saved.map((e) => e.id));
+  return [...saved, ...seed.filter((e) => !ids.has(e.id))]
+    .filter((e) => isEventVisible(e, now))
+    .sort((a, b) => a.startsAt - b.startsAt);
+}
+
 // ---------- Moderation ----------
 
-export type ReportTarget = 'project' | 'review';
+export type ReportTarget = 'project' | 'review' | 'event';
 
 export interface ContentReport {
   id: string;
@@ -169,9 +203,9 @@ export async function listReports(): Promise<ContentReport[]> {
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
-/** Hides the reported release/review for everyone and closes the report. */
+/** Hides the reported release, review or event for everyone and closes the report. */
 export async function hideReportedContent(report: ContentReport): Promise<void> {
-  const col = report.targetType === 'project' ? PROJECTS : REVIEWS;
+  const col = report.targetType === 'project' ? PROJECTS : report.targetType === 'event' ? EVENTS : REVIEWS;
   await updateDoc(doc(db!, col, report.targetId), { hidden: true, hiddenAt: Date.now() });
   await deleteDoc(doc(db!, REPORTS, report.id));
 }

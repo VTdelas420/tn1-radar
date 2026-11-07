@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { MusicProject } from '../types/music';
+import { directionsUrl, eventWhen, isEventHappening, type CityEvent } from '../types/events';
 import {
   MapPin,
   Search,
@@ -20,6 +21,7 @@ import {
   Compass,
   Building2,
   Layers,
+  CalendarDays,
 } from 'lucide-react';
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
@@ -76,7 +78,14 @@ interface RegionalMapSearchProps {
   isPlaying: boolean;
   focusedProjectId?: string | null;
   onClearFocusedProject?: () => void;
+  /** Events happening in the city (inverted-triangle pins) */
+  events?: CityEvent[];
+  onOpenEvent?: (event: CityEvent) => void;
+  focusedEventId?: string | null;
+  onClearFocusedEvent?: () => void;
 }
+
+type MapLayerFilter = 'all' | 'music' | 'events';
 
 const BRAZIL_STATES_METADATA: {
   sigla: string;
@@ -157,7 +166,13 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
   isPlaying,
   focusedProjectId,
   onClearFocusedProject,
+  events = [],
+  onOpenEvent,
+  focusedEventId,
+  onClearFocusedEvent,
 }) => {
+  const [layerFilter, setLayerFilter] = useState<MapLayerFilter>('all');
+  const [activePinEvent, setActivePinEvent] = useState<CityEvent | null>(null);
   const [priceFilter, setPriceFilter] = useState<'all' | 'free' | 'paid'>('all');
   const [selectedStateFilter, setSelectedStateFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -198,6 +213,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
   // Filter projects purely by user's navigation / search criteria (Zero algorithmic ranking)
   const filteredProjects = useMemo(() => {
+    if (layerFilter === 'events') return [];
     return brazilProjects.filter((project) => {
       if (priceFilter === 'free' && project.pricingModel !== 'free') return false;
       if (priceFilter === 'paid' && project.pricingModel === 'free') return false;
@@ -222,7 +238,28 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
       return true;
     });
-  }, [brazilProjects, priceFilter, selectedStateFilter, searchQuery]);
+  }, [brazilProjects, priceFilter, selectedStateFilter, searchQuery, layerFilter]);
+
+  // Events in the region, same place filter and search as releases
+  const filteredEvents = useMemo(() => {
+    if (layerFilter === 'music') return [];
+    const q = searchQuery.trim().toLowerCase();
+    return events.filter((ev) => {
+      if (!isInRegion(ev.coordinates.lat, ev.coordinates.lng, 15)) return false;
+      if (selectedStateFilter === 'ENTORNO') {
+        if ((ev.state || '').toUpperCase() !== 'GO') return false;
+      } else if (selectedStateFilter !== 'all') {
+        const matchUf = (ev.state || '').toUpperCase() === selectedStateFilter.toUpperCase();
+        const matchCity = ev.city.toLowerCase() === selectedStateFilter.toLowerCase();
+        if (!matchUf && !matchCity) return false;
+      }
+      if (q) {
+        const text = [ev.title, ev.genre, ev.venueName, ev.city, ev.lineup, ev.organizerName].join(' ').toLowerCase();
+        if (!text.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [events, layerFilter, selectedStateFilter, searchQuery]);
 
   // Sort projects geographically (North-to-South, West-to-East) for the tactical scanner
   // so cycling through pins has zero fame/money bias
@@ -239,10 +276,11 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     (proj: MusicProject, targetZoom = 7.5) => {
       const map = mapInstanceRef.current;
       setActivePinProject(proj);
+      setActivePinEvent(null);
       if (!map) return;
 
       const finalZoom = Math.max(map.getZoom(), targetZoom);
-      const spreadAtTarget = spreadOverlappingProjects(filteredProjects, finalZoom);
+      const spreadAtTarget = spreadOverlappingProjects([...filteredProjects, ...filteredEvents], finalZoom);
       const pos = spreadAtTarget.get(proj.id);
       const destLat = pos ? pos.lat : proj.coordinates.lat;
       const destLng = pos ? pos.lng : proj.coordinates.lng;
@@ -252,7 +290,23 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         easeLinearity: 0.2,
       });
     },
-    [filteredProjects]
+    [filteredProjects, filteredEvents]
+  );
+
+  const flyToEventPin = useCallback(
+    (ev: CityEvent, targetZoom = 7.5) => {
+      const map = mapInstanceRef.current;
+      setActivePinEvent(ev);
+      setActivePinProject(null);
+      if (!map) return;
+      const finalZoom = Math.max(map.getZoom(), targetZoom);
+      const pos = spreadOverlappingProjects([...filteredProjects, ...filteredEvents], finalZoom).get(ev.id);
+      map.flyTo([pos ? pos.lat : ev.coordinates.lat, pos ? pos.lng : ev.coordinates.lng], finalZoom, {
+        duration: 0.85,
+        easeLinearity: 0.2,
+      });
+    },
+    [filteredProjects, filteredEvents]
   );
 
   // Cycle between pins on the map (Watch Dogs / GTA target scanner)
@@ -289,6 +343,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
     setSelectedStateFilter('all');
     setActiveStateSector(null);
     setActivePinProject(null);
+    setActivePinEvent(null);
   }, []);
 
   // Focus & fly to newly published project
@@ -318,6 +373,23 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       return () => clearTimeout(timer);
     }
   }, [focusedProjectId, projects, onClearFocusedProject]);
+
+  // Focus & fly to a newly published event
+  useEffect(() => {
+    if (!focusedEventId) return;
+    const target = events.find((e) => e.id === focusedEventId);
+    if (!target) return;
+    setLayerFilter((f) => (f === 'music' ? 'all' : f));
+    setSelectedStateFilter('all');
+    setSearchQuery('');
+    setActivePinEvent(target);
+    setActivePinProject(null);
+    const timer = setTimeout(() => {
+      mapInstanceRef.current?.flyTo([target.coordinates.lat, target.coordinates.lng], 13, { duration: 1.0 });
+      onClearFocusedEvent?.();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [focusedEventId, events, onClearFocusedEvent]);
 
   // Keyboard navigation (GTA / Watch Dogs map hotkeys: [ / ] to cycle signals, ESC to zoom out)
   useEffect(() => {
@@ -984,8 +1056,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
   // Compute current spread positions & multi-point area peers
   const currentSpreadMap = useMemo(
-    () => spreadOverlappingProjects(pinProjects, currentZoom),
-    [pinProjects, currentZoom]
+    () => spreadOverlappingProjects([...pinProjects, ...filteredEvents], currentZoom),
+    [pinProjects, filteredEvents, currentZoom]
   );
 
 
@@ -1097,7 +1169,51 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
         }),
       }).addTo(group);
     });
-  }, [pinProjects, densityGroups, currentSpreadMap, activePinProject, currentProjectId, isPlaying, currentZoom, flyToProjectPin]);
+
+    // Events: inverted-triangle pins, same size and motion for every event
+    filteredEvents.forEach((ev) => {
+      const pos = currentSpreadMap.get(ev.id);
+      const lat = pos ? pos.lat : ev.coordinates.lat;
+      const lng = pos ? pos.lng : ev.coordinates.lng;
+      const isSelected = activePinEvent?.id === ev.id;
+      const state = isSelected ? 'selected' : 'idle';
+      const showLabel = isSelected || currentZoom >= 10.5;
+      const label = ev.venueName.replace(/</g, '&lt;');
+      const html = `
+        <div class="relative" style="width: 44px; height: 44px;">
+          ${pinMarkup(ev.id, state, 30, 44, 'event')}
+          ${
+            showLabel
+              ? `<div class="absolute left-1/2 -translate-x-1/2 -bottom-6 px-1.5 py-0.5 bg-black/85 text-[12px] whitespace-nowrap pointer-events-none ${
+                  isSelected ? 'font-bold text-white' : 'text-azulejo/90'
+                }">${label}</div>`
+              : ''
+          }
+        </div>`;
+      const marker = L.marker([lat, lng], {
+        icon: L.divIcon({ html, className: 'custom-substream-pin', iconSize: [44, 44], iconAnchor: [22, 22] }),
+        zIndexOffset: isSelected ? 1000 : 450,
+        title: `Evento: ${ev.title}`,
+        keyboard: true,
+      });
+      marker.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        flyToEventPin(ev, 7.5);
+      });
+      marker.addTo(group);
+      L.marker([lat, lng], {
+        pane: GROUND_PANE,
+        interactive: false,
+        keyboard: false,
+        icon: L.divIcon({
+          html: pinGroundMarkup(ev.id, state, 30, 'event'),
+          className: 'custom-substream-pin',
+          iconSize: [GROUND_BOX, GROUND_BOX],
+          iconAnchor: [GROUND_BOX / 2, GROUND_BOX / 2],
+        }),
+      }).addTo(group);
+    });
+  }, [pinProjects, densityGroups, currentSpreadMap, activePinProject, currentProjectId, isPlaying, currentZoom, flyToProjectPin, filteredEvents, activePinEvent, flyToEventPin]);
 
   const handleZoomIn = () => {
     mapInstanceRef.current?.zoomIn();
@@ -1281,6 +1397,31 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
         {/* Top-Left Tactical Sector Breadcrumb & Live Hover Telemetry */}
         <div className="absolute top-3 left-3 md:top-4 md:left-4 right-16 md:right-auto z-20 flex flex-wrap items-center gap-2">
+          {/* What the map shows: releases (spheres), events (triangles) or both */}
+          <div role="radiogroup" aria-label="Mostrar no mapa" className="flex items-center p-0.5 rounded-xl bg-black/90 backdrop-blur-md border border-athos-900/60 shadow-xl">
+            {([
+              ['all', 'Tudo'],
+              ['music', 'Música'],
+              ['events', 'Eventos'],
+            ] as [MapLayerFilter, string][]).map(([value, label]) => (
+              <button
+                key={value}
+                role="radio"
+                aria-checked={layerFilter === value}
+                onClick={() => {
+                  setLayerFilter(value);
+                  if (value === 'events') setActivePinProject(null);
+                  if (value === 'music') setActivePinEvent(null);
+                }}
+                className={`min-h-[36px] px-3 rounded-[10px] text-xs font-semibold transition-colors ${
+                  layerFilter === value ? 'bg-athos-600 text-white' : 'text-athos-200 hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           <div className={`${activePinProject || activeStateSector ? 'flex' : 'hidden sm:flex'} items-center gap-2 px-3.5 py-2 rounded-xl bg-black/90 backdrop-blur-md border border-athos-900/60 text-xs text-athos-300 shadow-xl`}>
             <Compass className="w-3.5 h-3.5 text-athos-400 shrink-0" />
             <span>
@@ -1543,6 +1684,85 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                 className="min-h-[44px] flex items-center justify-center gap-2 px-3 bg-athos-600 hover:bg-athos-500 text-white text-xs font-bold rounded-xl transition-colors active:scale-95"
               >
                 <span>Ver lançamento</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Event card on pin click */}
+        {activePinEvent && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-2 left-2 right-2 md:bottom-4 md:left-auto md:right-4 md:w-[430px] bg-black/95 backdrop-blur-xl border border-athos-500/60 p-3 md:p-4 rounded-2xl z-30 animate-in slide-in-from-bottom-3 duration-200"
+          >
+            <div className="flex items-center justify-between gap-2 pb-2 md:pb-2.5 mb-2.5 md:mb-3 border-b border-zinc-800/80">
+              <div className="flex flex-1 min-w-0 items-center gap-1.5 text-xs text-zinc-400">
+                <CalendarDays className="w-3.5 h-3.5 text-athos-400 shrink-0" />
+                <span className="text-zinc-100 font-semibold truncate">
+                  {isEventHappening(activePinEvent) ? 'Acontecendo agora' : eventWhen(activePinEvent)}
+                </span>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActivePinEvent(null);
+                }}
+                className="min-w-[36px] min-h-[36px] flex items-center justify-center text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900 transition-colors"
+                aria-label="Fechar evento"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              {activePinEvent.flyerUrl ? (
+                <img
+                  src={activePinEvent.flyerUrl}
+                  alt=""
+                  className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover shrink-0 border border-zinc-800 cursor-pointer"
+                  onClick={() => onOpenEvent?.(activePinEvent)}
+                />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="w-16 h-16 md:w-20 md:h-20 rounded-xl shrink-0 border border-zinc-800 bg-black flex items-center justify-center"
+                  dangerouslySetInnerHTML={{ __html: pinMarkup(activePinEvent.id, 'idle', 30, 44, 'event') }}
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <h4
+                  onClick={() => onOpenEvent?.(activePinEvent)}
+                  className="text-base font-bold text-white hover:text-athos-300 transition-colors truncate cursor-pointer"
+                >
+                  {activePinEvent.title}
+                </h4>
+                <div className="text-xs text-zinc-400 truncate mt-0.5">
+                  {activePinEvent.venueName}, {activePinEvent.city}
+                </div>
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1.5 md:mt-2 text-xs">
+                  <span className="text-zinc-300">{activePinEvent.genre}</span>
+                  <span className={activePinEvent.entry === 'free' ? 'text-athos-400 font-bold' : 'text-ipe font-bold'}>
+                    {activePinEvent.entry === 'free' ? 'Entrada gratuita' : activePinEvent.priceText || 'Entrada paga'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 md:gap-2.5 mt-3 md:mt-4">
+              <a
+                href={directionsUrl(activePinEvent)}
+                target="_blank"
+                rel="noreferrer"
+                className="min-h-[44px] flex items-center justify-center gap-2 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 text-xs font-semibold rounded-xl border border-zinc-800 transition-colors active:scale-95"
+              >
+                <MapPin className="w-4 h-4 text-athos-400" />
+                <span>Como chegar</span>
+              </a>
+              <button
+                onClick={() => onOpenEvent?.(activePinEvent)}
+                className="min-h-[44px] flex items-center justify-center gap-2 px-3 bg-athos-600 hover:bg-athos-500 text-white text-xs font-bold rounded-xl transition-colors active:scale-95"
+              >
+                <span>Ver evento</span>
               </button>
             </div>
           </div>

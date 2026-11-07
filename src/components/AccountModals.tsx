@@ -5,6 +5,7 @@ import { ENTORNO_CITIES, REGION_LOCATIONS, REGION_NAME } from '../config/region'
 
 const REASON_TEXT: Record<AuthReason, string> = {
   publish: 'Entre para publicar seu lançamento no mapa.',
+  event: 'Entre para divulgar um evento no mapa.',
   review: 'Entre para escrever uma avaliação.',
   report: 'Entre para denunciar um conteúdo.',
   generic: 'Ouvir e explorar o mapa é livre. Para publicar e avaliar, entre na sua conta.',

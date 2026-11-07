@@ -31,7 +31,7 @@ export interface AccountProfile {
 }
 
 /** Why the login window was opened — shown as its subtitle. */
-export type AuthReason = 'publish' | 'review' | 'report' | 'generic';
+export type AuthReason = 'publish' | 'event' | 'review' | 'report' | 'generic';
 
 interface AuthContextValue {
   enabled: boolean;

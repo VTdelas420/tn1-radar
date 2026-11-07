@@ -95,11 +95,47 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
+    // ---- events: any account with a profile can post one inside DF + Entorno ----
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if hasProfile()
+        && request.resource.data.ownerUid == request.auth.uid
+        && !('hidden' in request.resource.data)
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.venueName is string
+        && request.resource.data.venueName.size() > 0
+        && request.resource.data.venueName.size() <= 120
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.entry in ['free', 'paid']
+        && request.resource.data.startsAt is number
+        && request.resource.data.endsAt is number
+        && request.resource.data.endsAt > request.resource.data.startsAt
+        // at most 3 days long, ending after now, starting within a year
+        && request.resource.data.endsAt - request.resource.data.startsAt <= 3 * 24 * 60 * 60 * 1000
+        && request.resource.data.endsAt > request.time.toMillis()
+        && request.resource.data.startsAt < request.time.toMillis() + 366 * 24 * 60 * 60 * 1000
+        && request.resource.data.state in ['DF', 'GO']
+        && request.resource.data.coordinates.lat is number
+        && request.resource.data.coordinates.lng is number
+        && request.resource.data.coordinates.lat >= -17.15
+        && request.resource.data.coordinates.lat <= -14.85
+        && request.resource.data.coordinates.lng >= -49.1
+        && request.resource.data.coordinates.lng <= -47.0;
+      allow update: if (signedIn() && resource.data.ownerUid == request.auth.uid
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.get('hidden', false) == resource.data.get('hidden', false))
+        || (isAdmin() && onlyHiding());
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
     // ---- reports: anyone signed in can file one; only admins read/close them ----
     match /reports/{reportId} {
       allow create: if signedIn()
         && request.resource.data.reporterUid == request.auth.uid
-        && request.resource.data.targetType in ['project', 'review']
+        && request.resource.data.targetType in ['project', 'review', 'event']
         && request.resource.data.targetId is string
         && request.resource.data.reason is string
         && request.resource.data.reason.size() <= 1000;

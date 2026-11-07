@@ -186,6 +186,28 @@ input[type="range"] {
   pointer-events: none;
 }
 .tn1-pin.is-selected .tn1-pin__ring { border-width: 1.5px; border-color: #ffffff; }
+/* Event pins: inverted-triangle outline and wave */
+.tn1-pin__tri {
+  position: absolute;
+  inset: 14%;
+  width: 72%;
+  height: 72%;
+  overflow: visible;
+  fill: none;
+  stroke: rgba(242, 245, 250, 0.92);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.tn1-pin--event.is-selected .tn1-pin__tri { stroke: #ffffff; stroke-width: 1.5px; }
+.tn1-pin--event .tn1-pin__wave {
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(0 4%, 100% 4%, 50% 96%);
+  background: rgba(var(--glow), 0.55);
+}
+
 /* Light passing over the ring from the centre */
 .tn1-pin__glint {
   position: absolute;

@@ -56,7 +56,7 @@ export const ModerationPanel: React.FC<{ onClose: () => void }> = ({ onClose }) 
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[11px] text-zinc-500">
-                    {r.targetType === 'project' ? 'Lançamento' : 'Avaliação'} ·{' '}
+                    {r.targetType === 'project' ? 'Lançamento' : r.targetType === 'event' ? 'Evento' : 'Avaliação'} ·{' '}
                     {new Date(r.createdAt).toLocaleString('pt-BR')}
                   </p>
                   <p className="text-sm font-semibold text-white truncate">{r.targetTitle}</p>

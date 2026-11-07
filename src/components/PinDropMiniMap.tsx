@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { pinMarkup } from '../utils/pin';
+import { pinMarkup, type PinShape } from '../utils/pin';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import { REGION_CAMERA_BOUNDS, isInRegion } from '../config/region';
 
@@ -11,13 +11,17 @@ interface PinDropMiniMapProps {
   onChange: (lat: number, lng: number) => void;
   /** Changes when the chosen RA/city changes, so the map recentres there. */
   focusKey: string;
+  /** Sphere for releases (default), triangle for events */
+  shape?: PinShape;
+  /** Help line under the map */
+  hint?: string;
 }
 
-const PIN_HTML = `
-  <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${pinMarkup('novo-lancamento', 'selected', 34, 36)}</div>`;
+const pinHtml = (shape: PinShape) => `
+  <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${pinMarkup('novo-lancamento', 'selected', 34, 36, shape)}</div>`;
 
 /** Small map in the release form: click or drag to set the exact spot the music was made. */
-export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChange, focusKey }) => {
+export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChange, focusKey, shape = 'music', hint }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -41,7 +45,7 @@ export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChan
 
     const marker = L.marker([lat, lng], {
       draggable: true,
-      icon: L.divIcon({ html: PIN_HTML, className: '', iconSize: [36, 36], iconAnchor: [18, 18] }),
+      icon: L.divIcon({ html: pinHtml(shape), className: '', iconSize: [36, 36], iconAnchor: [18, 18] }),
       keyboard: true,
       title: 'Arraste para o ponto exato',
     }).addTo(map);
@@ -94,7 +98,7 @@ export const PinDropMiniMap: React.FC<PinDropMiniMapProps> = ({ lat, lng, onChan
         aria-label="Mini-mapa: clique ou arraste o pino até o ponto exato"
       />
       <p className="text-[11px] text-zinc-400">
-        Toque no mapa ou arraste o pino até a rua ou quadra onde a música foi feita. Isso é opcional.
+        {hint ?? 'Toque no mapa ou arraste o pino até a rua ou quadra onde a música foi feita. Isso é opcional.'}
       </p>
     </div>
   );

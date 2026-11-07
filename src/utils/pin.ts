@@ -1,13 +1,16 @@
 /**
  * TN1 Radar map pin: light rising from a point, drawn as a low-resolution
  * gradient so its edges show square pixel steps (as in the TN1 artwork), with a
- * thin ring inside it that the light passes through. Every release uses the
- * same pin, size and motion (equal weight).
+ * thin outline inside it that the light passes through. Two shapes:
+ *   - 'music' (releases): round light, circle outline
+ *   - 'event' (events in the city): inverted-triangle light and outline
+ * Every pin of a kind has the same size and motion (equal weight).
  * Selected: whiter light. Playing: ipê-yellow light that beats.
  * Motion lives in index.css (.tn1-pin).
  */
 
 export type PinState = 'idle' | 'selected' | 'playing';
+export type PinShape = 'music' | 'event';
 
 const FLOAT_S = 3.4;
 const WAVE_S = { idle: 2.8, selected: 1.8, playing: 1 } as const;
@@ -24,11 +27,24 @@ export const LIGHT_SCALE = 2.2;
 const GRID = 16; // pixels across the light texture
 const STEPS = 7; // brightness steps, so the falloff bands like the artwork
 
-const textureCache = new Map<PinState, string>();
+const textureCache = new Map<string, string>();
 
-/** Pixel-stepped radial light as a tiny PNG (cached per state). */
-function lightTexture(state: PinState): string {
-  const cached = textureCache.get(state);
+/**
+ * How far a texture point is from the centre, 0 at the centre and 1 at the light's rim:
+ * a circle for music, an inverted triangle (point down) for events.
+ */
+function reach(dx: number, dy: number, shape: PinShape) {
+  if (shape === 'music') return Math.hypot(dx, dy) * 2;
+  // Distance to the farthest edge of an inverted equilateral triangle (top edge flat).
+  // Its corners touch the texture's border at reach 1.
+  const d = Math.max(-dy, 0.866 * dx + 0.5 * dy, -0.866 * dx + 0.5 * dy);
+  return d * 4;
+}
+
+/** Pixel-stepped light as a tiny PNG (cached per shape and state). */
+function lightTexture(state: PinState, shape: PinShape = 'music'): string {
+  const key = `${shape}:${state}`;
+  const cached = textureCache.get(key);
   if (cached) return cached;
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = GRID;
@@ -41,7 +57,7 @@ function lightTexture(state: PinState): string {
     for (let x = 0; x < GRID; x++) {
       const dx = (x + 0.5) / GRID - 0.5;
       const dy = (y + 0.5) / GRID - 0.5;
-      const r = Math.min(1, Math.hypot(dx, dy) * 2);
+      const r = Math.min(1, reach(dx, dy, shape));
       // Colour: centre tone fading to the body tone across the pin
       const t = Math.min(1, r / pinEdge);
       // Soft inside the pin (the round glint and ring carry the centre), strongest at the pin edge, then falling off
@@ -56,7 +72,7 @@ function lightTexture(state: PinState): string {
   }
   ctx.putImageData(img, 0, 0);
   const url = canvas.toDataURL('image/png');
-  textureCache.set(state, url);
+  textureCache.set(key, url);
   return url;
 }
 
@@ -80,17 +96,20 @@ function phase(seed: string, period: number): string {
   return `-${((t % 1) * period).toFixed(2)}s`;
 }
 
+// Event outline: inverted triangle (top edge flat), corners on a circle of radius 46
+const TRIANGLE = '<svg class="tn1-pin__tri" viewBox="0 0 100 100" aria-hidden="true"><path d="M10.16 27H89.84L50 96Z"/></svg>';
+
 /** Animated pin, `size` px across, centred in a `box` px square (the tap area). */
-export function pinMarkup(seed: string, state: PinState = 'idle', size = 30, box = 44): string {
-  const stateClass = state === 'idle' ? '' : ` is-${state}`;
+export function pinMarkup(seed: string, state: PinState = 'idle', size = 30, box = 44, shape: PinShape = 'music'): string {
+  const stateClass = (state === 'idle' ? '' : ` is-${state}`) + (shape === 'event' ? ' tn1-pin--event' : '');
   const floatDelay = phase(seed, FLOAT_S);
   const waveDelay = phase(`${seed}~wave`, WAVE_S[state]);
-  return `<div class="tn1-pin${stateClass}" style="width:${box}px;height:${box}px;--pin:${size}px;--light:url(${lightTexture(state)})">
+  return `<div class="tn1-pin${stateClass}" style="width:${box}px;height:${box}px;--pin:${size}px;--light:url(${lightTexture(state, shape)})">
     <div class="tn1-pin__wave" style="animation-delay:${waveDelay}"></div>
     <div class="tn1-pin__float" style="animation-delay:${floatDelay}">
       <div class="tn1-pin__lift">
         <div class="tn1-pin__light" style="animation-delay:${floatDelay}"></div>
-        <div class="tn1-pin__ring"></div>
+        ${shape === 'event' ? TRIANGLE : '<div class="tn1-pin__ring"></div>'}
         <div class="tn1-pin__glint"></div>
       </div>
     </div>
@@ -106,10 +125,10 @@ export const GROUND_BOX = 120;
  * out from the streets) and a flattened, pixel-stepped pool of its light on the
  * ground, which shrinks while the pin floats up.
  */
-export function pinGroundMarkup(seed: string, state: PinState = 'idle', size = 30): string {
+export function pinGroundMarkup(seed: string, state: PinState = 'idle', size = 30, shape: PinShape = 'music'): string {
   const stateClass = state === 'idle' ? '' : ` is-${state}`;
   const floatDelay = phase(seed, FLOAT_S);
-  return `<div class="tn1-ground${stateClass}" style="width:${GROUND_BOX}px;height:${GROUND_BOX}px;--pin:${size}px;--light:url(${lightTexture(state)})">
+  return `<div class="tn1-ground${stateClass}" style="width:${GROUND_BOX}px;height:${GROUND_BOX}px;--pin:${size}px;--light:url(${lightTexture(state, shape)})">
     <div class="tn1-ground__dim"></div>
     <div class="tn1-ground__pool" style="animation-delay:${floatDelay}"></div>
   </div>`;

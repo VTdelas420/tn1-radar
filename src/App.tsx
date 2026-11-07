@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { isFirebaseEnabled, isUsingEmulators } from './lib/firebase';
-import { loadCatalog, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
+import { loadCatalog, loadEvents, publishEvent, publishProject, saveReview, type ReleaseFiles } from './lib/persistence';
 import { useAuth } from './lib/auth';
 import { AccountModals } from './components/AccountModals';
 import { ModerationPanel } from './components/ModerationPanel';
@@ -16,6 +16,10 @@ import { UserProfileView } from './components/UserProfileView';
 import { AudioPlayerBottomBar } from './components/AudioPlayerBottomBar';
 import { CheckoutModal } from './components/CheckoutModal';
 import { NewProjectModal } from './components/NewProjectModal';
+import { NewEventModal } from './components/NewEventModal';
+import { EventDetailModal } from './components/EventDetailModal';
+import { INITIAL_EVENTS } from './data/mockEvents';
+import type { CityEvent } from './types/events';
 import { audioEngine } from './utils/audioEngine';
 import { formatBrl } from './utils/monetization';
 
@@ -25,6 +29,28 @@ export default function App() {
   // Publishing needs an artist account (opens login / profile setup first)
   const openNewProject = () => account.requireAccount('publish', () => setIsNewProjectModalOpen(true), { artist: true });
   const [projects, setProjects] = useState<MusicProject[]>(INITIAL_PROJECTS);
+  // Events in the city (triangles on the map); any account with a profile can post one
+  const [events, setEvents] = useState<CityEvent[]>(() => INITIAL_EVENTS.filter((e) => e.endsAt > Date.now()));
+  const [selectedEvent, setSelectedEvent] = useState<CityEvent | null>(null);
+  const [isNewEventOpen, setIsNewEventOpen] = useState(false);
+  const [focusedEventId, setFocusedEventId] = useState<string | null>(null);
+  const openNewEvent = () => account.requireAccount('event', () => setIsNewEventOpen(true));
+
+  useEffect(() => {
+    let cancelled = false;
+    loadEvents(INITIAL_EVENTS)
+      .then((list) => {
+        if (cancelled) return;
+        setEvents((prev) => {
+          const ids = new Set(list.map((e) => e.id));
+          return [...prev.filter((e) => !ids.has(e.id) && !e.id.startsWith('evt-demo')), ...list];
+        });
+      })
+      .catch((err) => console.error('Falha ao carregar eventos:', err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [userProfiles, setUserProfiles] = useState<UserProfile[]>(INITIAL_USER_PROFILES);
   const [selectedProject, setSelectedProject] = useState<MusicProject | null>(null);
   const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
@@ -437,6 +463,7 @@ export default function App() {
           setSelectedProject(null);
         }}
         onOpenNewProject={openNewProject}
+        onOpenNewEvent={openNewEvent}
         onOpenModeration={() => setIsModerationOpen(true)}
       />
 
@@ -469,6 +496,10 @@ export default function App() {
             isPlaying={isPlaying}
             focusedProjectId={focusedMapProjectId}
             onClearFocusedProject={() => setFocusedMapProjectId(null)}
+            events={events}
+            onOpenEvent={(ev) => setSelectedEvent(ev)}
+            focusedEventId={focusedEventId}
+            onClearFocusedEvent={() => setFocusedEventId(null)}
           />
         ) : activeTab === 'reprised' ? (
           /* Reprised Community Reviews & Listener Profiles Discovery */
@@ -581,6 +612,37 @@ export default function App() {
 
       <AccountModals />
       {isModerationOpen && <ModerationPanel onClose={() => setIsModerationOpen(false)} />}
+
+      {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+
+      {isNewEventOpen && (
+        <NewEventModal
+          organizer={account.profile}
+          onClose={() => setIsNewEventOpen(false)}
+          onSaveEvent={(ev, flyer) => {
+            setIsNewEventOpen(false);
+            setEvents((prev) => [ev, ...prev]);
+            setSelectedProject(null);
+            setActiveTab('map');
+            setFocusedEventId(ev.id);
+            if (isFirebaseEnabled) {
+              setSyncStatus({ kind: 'saving', message: flyer ? 'Enviando o flyer e o evento…' : 'Salvando o evento…' });
+              publishEvent(ev, flyer)
+                .then((stored) => {
+                  setEvents((prev) => prev.map((e) => (e.id === stored.id ? stored : e)));
+                  setSyncStatus({
+                    kind: 'saved',
+                    message: isUsingEmulators ? 'Evento salvo (modo teste local).' : 'Evento publicado no mapa.',
+                  });
+                })
+                .catch((err) => {
+                  console.error('Falha ao publicar evento:', err);
+                  setSyncStatus({ kind: 'error', message: 'O evento aparece só neste navegador: falhou o envio.' });
+                });
+            }
+          }}
+        />
+      )}
 
       {/* New Project Modal */}
       {isNewProjectModalOpen && (
