@@ -24,7 +24,7 @@ import {
 import L from 'leaflet';
 import { formatBrl } from '../utils/monetization';
 import { spreadOverlappingProjects, DF_ADMINISTRATIVE_REGIONS } from '../utils/releaseValidation';
-import { azulejoSvg } from '../utils/azulejo';
+import { pinImg } from '../utils/pin';
 import { createTacticalVectorLayer } from '../utils/tacticalVectorLayer';
 import {
   REGION_BOUNDS,
@@ -994,10 +994,11 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
 
     // Orbital density rings (same size for every place)
     densityGroups.forEach((g) => {
-      const tiles = [0, 1, 2, 3].map((i) => azulejoSvg(`${g.key}-${i}`, 'idle', 22)).join('');
+      // Many releases here: three pins together (same for every place)
+      const tiles = `<div style="display:flex;gap:2px">${pinImg('idle', 22)}${pinImg('idle', 22)}</div><div style="display:flex;justify-content:center;margin-top:1px">${pinImg('idle', 22)}</div>`;
       const ringHtml = `
         <div class="relative cursor-pointer" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-          <div style="display:grid;grid-template-columns:22px 22px;gap:2px;padding:2px;background:#000">${tiles}</div>
+          <div>${tiles}</div>
           <div class="absolute left-1/2 -translate-x-1/2 -bottom-6 px-1.5 py-0.5 bg-black/85 text-[12px] font-bold whitespace-nowrap text-azulejo pointer-events-none">
             ${g.name}
           </div>
@@ -1044,10 +1045,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
       const showLabel = isSelected || currentZoom >= 10.5;
       const html = `
         <div class="relative cursor-pointer" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
-          <div style="transform: scale(${isSelected || isCurrentlyPlaying ? 1.18 : 1}); transition: transform 150ms;${
-            isSelected ? ' box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--color-azulejo);' : ''
-          }">
-            ${azulejoSvg(proj.id, tileState, 30)}
+          <div style="transform: scale(${isSelected || isCurrentlyPlaying ? 1.18 : 1}); transition: transform 150ms;">
+            ${pinImg(tileState, 34)}
           </div>
           ${
             showLabel
@@ -1356,8 +1355,8 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
             }`}
             title={
               currentZoom >= 13.5
-                ? 'Sair do Zoom de Prédios 2.5D'
-                : 'Mergulhar no Nível Urbano (Ruas, Quadras e Prédios 2.5D)'
+                ? 'Afastar das ruas'
+                : 'Aproximar até as ruas'
             }
             aria-label="Alternar Zoom de Ruas e Prédios"
           >
@@ -1431,7 +1430,7 @@ export const RegionalMapSearch: React.FC<RegionalMapSearchProps> = ({
                     flyToProjectPin(activePinProject, currentZoom >= 14 ? 9.5 : 16)
                   }
                   className="min-w-[36px] sm:min-w-0 px-2 min-h-[36px] sm:min-h-[28px] flex items-center justify-center gap-1 text-[10px] font-semibold text-athos-300 bg-athos-500/10 hover:bg-athos-500/25 border border-athos-500/40 rounded-lg transition-colors whitespace-nowrap"
-                  title="Aproximar para ver Ruas Reais, Bairros e Arquitetura 2.5D ao redor deste lançamento"
+                  title="Aproximar para ver as ruas ao redor deste lançamento"
                   aria-label={currentZoom >= 14 ? 'Visão Bairros' : 'Ruas & Prédios'}
                 >
                   <Building2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
