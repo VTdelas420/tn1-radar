@@ -45,6 +45,11 @@ const octagon = (lat, lng, metres) => {
   return { type: 'Polygon', coordinates: [ring] };
 };
 
+// Only bairro-level names on the map: skip superquadras/blocks, conjuntos,
+// condomínios and street-like names (TN1 Radar shows neighbourhoods, not addresses).
+const NOT_A_BAIRRO =
+  /^(conjunto|conj\.|quadras?\b|qd\.|trecho\b|lote\b|condom[ií]nio|cond\.|via\b|rua\b|avenida\b|av\.|estrada\b|rodovia\b|eixo\b|(sq|cl|eq|sh|sc|sm|sg|ep|sr)[a-z]{0,3}\s*\d)/i;
+
 const osm = JSON.parse(readFileSync(osmPath, 'utf8'));
 const seen = new Set();
 const features = [];
@@ -54,8 +59,9 @@ for (const el of osm.elements ?? []) {
   const key = `${name.toLowerCase()}|${el.lat.toFixed(3)}|${el.lon.toFixed(3)}`;
   if (seen.has(key)) continue;
   seen.add(key);
-  // Tier 1 = bairro/setor (shown from z11); tier 2 = small units like each superquadra (z14)
-  const tier = el.tags.place === 'neighbourhood' ? 2 : 1;
+  // place=neighbourhood in Brasília is mostly single superquadras/blocks: not shown
+  if (el.tags.place === 'neighbourhood' || NOT_A_BAIRRO.test(name)) continue;
+  const tier = 1;
   const owner = nearest(el.lat, el.lon);
   features.push({
     type: 'Feature',
